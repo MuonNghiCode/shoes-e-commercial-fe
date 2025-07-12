@@ -1,7 +1,9 @@
 import { Layout, AuthLayout, AdminLayout } from "@/layouts";
 import { Home, Login, Register } from "@/pages";
+import UserProfile from "@/pages/UserProfile";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import { createBrowserRouter } from "react-router-dom";
+import MyOrders from "@/pages/MyOrders";
 
 const router = createBrowserRouter([
   {
@@ -12,6 +14,14 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Home />,
+      },
+      {
+        path: "user-profile",
+        element: <UserProfile />,
+      },
+      {
+        path: "user-orders",
+        element: <MyOrders />,
       },
     ],
   },
