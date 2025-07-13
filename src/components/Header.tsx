@@ -2,6 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
 import UserDropdown from "./UserDropdown";
+import { FaUserCircle } from "react-icons/fa";
 
 const NAV_LINKS = [
   { label: "Home", to: "/" },
@@ -119,6 +120,7 @@ const Header = ({ isAdminLayout = false }: { isAdminLayout?: boolean }) => {
           )}
           {isAuthenticated && (
             <div className="relative">
+              <button onClick={logout}>Logout</button>
               <button
                 className="flex items-center justify-center w-11 h-11 rounded-full bg-[#F5F5F3] border border-[#C9B37C] shadow hover:scale-105 transition focus:outline-none"
                 onClick={() => setDropdownOpen((open) => !open)}
@@ -126,19 +128,7 @@ const Header = ({ isAdminLayout = false }: { isAdminLayout?: boolean }) => {
                 aria-label="Tài khoản"
                 type="button"
               >
-                <svg
-                  width="24"
-                  height="24"
-                  fill="none"
-                  stroke="#2D1A10"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  viewBox="0 0 24 24"
-                >
-                  <circle cx="12" cy="8.5" r="4" />
-                  <path d="M4 20c0-3.5 3.5-6 8-6s8 2.5 8 6" />
-                </svg>
+                <FaUserCircle size={28} color="#2D1A10" />
               </button>
               {dropdownOpen && <UserDropdown onLogout={logout} />}
             </div>
@@ -166,6 +156,7 @@ const Header = ({ isAdminLayout = false }: { isAdminLayout?: boolean }) => {
         )}
         {isAuthenticated && (
           <div className="relative ml-2">
+            <button onClick={logout}>Logout</button>
             <button
               className="flex items-center justify-center w-9 h-9 rounded-full bg-[#F5F5F3] border border-[#C9B37C] shadow focus:outline-none"
               onClick={() => setDropdownOpenMobile((open) => !open)}
@@ -173,19 +164,7 @@ const Header = ({ isAdminLayout = false }: { isAdminLayout?: boolean }) => {
               aria-label="Tài khoản"
               type="button"
             >
-              <svg
-                width="20"
-                height="20"
-                fill="none"
-                stroke="#2D1A10"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                viewBox="0 0 24 24"
-              >
-                <circle cx="12" cy="8.5" r="4" />
-                <path d="M4 20c0-3.5 3.5-6 8-6s8 2.5 8 6" />
-              </svg>
+              <FaUserCircle size={22} color="#2D1A10" />
             </button>
             {dropdownOpenMobile && <UserDropdown onLogout={logout} />}
           </div>
