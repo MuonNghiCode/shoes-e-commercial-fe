@@ -21,40 +21,10 @@ const shoes = [
       "https://www.converse.com/on/demandware.static/-/Sites-converse-master-catalog/default/dw2e2e2e2e/images/a_107/162050C_A_107X1.jpg",
   },
 ];
-
-import { useNavigate } from "react-router-dom";
-
-const Home = () => {
-  const navigate = useNavigate();
+export default function ProductList() {
   return (
-    <div className="max-w-5xl mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8 text-center">
-        Cửa hàng giày Sneaker
-      </h1>
-      <div className="flex justify-end mb-4">
-        <button
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          onClick={() => navigate("/user-profile")}
-        >
-          My profile
-        </button>
-      </div>
-      <div className="flex justify-end mb-4">
-        <button
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          onClick={() => navigate("/user-orders")}
-        >
-          My Orders
-        </button>
-      </div>
-      <div className="flex justify-end mb-4">
-        <button
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          onClick={() => navigate("/user-productList")}
-        >
-          Our Product
-        </button>
-      </div>
+    <div>
+      <h1>Product List</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
         {shoes.map((shoe) => (
           <div
@@ -80,6 +50,4 @@ const Home = () => {
       </div>
     </div>
   );
-};
-
-export default Home;
+}
