@@ -17,6 +17,70 @@ body {
   --sneako-gray: #f5f5f3;
 }
 
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px; /* Độ rộng thanh cuộn giống toàn web */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #fff; /* Màu nền trắng luxury */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    to bottom,
+    #fff,
+    var(--sneako-gold),
+    #fff
+  ); /* Gradient luxury đồng bộ, nền trắng */
+  border-radius: 10px;
+  transition: all 0.3s ease-in-out;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    to bottom,
+    #fff,
+    #e6d4b6,
+    #fff
+  ); /* Gradient luxury sáng hơn khi hover, nền trắng */
+}
+
+/* 🌟 Tùy chỉnh thanh cuộn cho toàn bộ trang web 🌟 */
+html {
+  scroll-behavior: smooth; /* Cuộn mượt mà */
+}
+
+/* Thanh cuộn trên trình duyệt WebKit (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 10px; /* Độ rộng thanh cuộn */
+}
+
+::-webkit-scrollbar-track {
+  background: #fff; /* Màu nền trắng luxury */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    to bottom,
+    #fff,
+    var(--sneako-gold),
+    #fff
+  ); /* Gradient luxury đồng bộ, nền trắng */
+  border-radius: 10px;
+  transition: all 0.3s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    to bottom,
+    #fff,
+    var(--sneako-beige),
+    #fff
+  ); /* Gradient luxury sáng hơn khi hover, nền trắng */
+}
+
 .sneako-header-modern {
   background: var(--sneako-beige);
   box-shadow: 0 2px 16px 0 rgba(45, 26, 16, 0.07);
