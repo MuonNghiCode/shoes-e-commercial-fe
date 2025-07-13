@@ -8,7 +8,6 @@ const initialUser = {
   address: "123 Đường ABC, Quận 1, TP.HCM",
   gender: "Nam",
   dob: "1995-01-01",
-  role: "User",
 };
 
 const UserProfile = () => {
@@ -65,9 +64,6 @@ const UserProfile = () => {
             </li>
             <li>
               <strong>Ngày sinh:</strong> {user.dob}
-            </li>
-            <li>
-              <strong>Vai trò:</strong> {user.role}
             </li>
           </ul>
           <button onClick={handleEdit} style={{ marginTop: 16 }}>
@@ -139,10 +135,7 @@ const UserProfile = () => {
               type="date"
             />
           </label>
-          <label>
-            Vai trò:
-            <input name="role" value={form.role} disabled />
-          </label>
+
           <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
             <button type="submit">Lưu</button>
             <button type="button" onClick={handleCancel}>
