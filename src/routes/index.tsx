@@ -3,7 +3,8 @@ import { Home, Login, Register } from "@/pages";
 import UserProfile from "@/pages/UserProfile";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import { createBrowserRouter } from "react-router-dom";
-import MyOrders from "@/pages/Oder/MyOrders";
+import MyOrders from "@/pages/Order/MyOrders";
+import ProductList from "@/pages/Product/ProductList";
 
 const router = createBrowserRouter([
   {
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
       {
         path: "user-orders",
         element: <MyOrders />,
+      },
+      {
+        path: "user-productList",
+        element: <ProductList />,
       },
     ],
   },
