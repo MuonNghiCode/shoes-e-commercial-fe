@@ -1,8 +1,74 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+@import "tailwindcss";
 
-* {
+:root,
+body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   font-family: "Montserrat", sans-serif;
+}
+
+/* Sneako modern luxury header - underline nav active/hover, no bg change */
+:root {
+  --sneako-dark: #2d1a10;
+  --sneako-beige: #e6d4b6;
+  --sneako-gold: #c9b37c;
+  --sneako-gray: #f5f5f3;
+}
+
+.sneako-header-modern {
+  background: var(--sneako-beige);
+  box-shadow: 0 2px 16px 0 rgba(45, 26, 16, 0.07);
+  border-bottom: 1.5px solid var(--sneako-gold);
+}
+
+.sneako-nav-link {
+  color: var(--sneako-dark);
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1.25rem;
+  position: relative;
+  transition: color 0.2s;
+  text-decoration: none;
+}
+.sneako-nav-link::after {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 25%;
+  right: 25%;
+  bottom: 0.2rem;
+  height: 2.5px;
+  background: var(--sneako-gold);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sneako-nav-link.active::after {
+  transform: scaleX(1);
+}
+.sneako-nav-link:hover::after {
+  transform: scaleX(1);
+}
+.sneako-nav-link.active,
+.sneako-nav-link:hover {
+  color: var(--sneako-dark);
+}
+
+.sneako-cta {
+  background: var(--sneako-dark);
+  color: var(--sneako-beige);
+  font-weight: 700;
+  border-radius: 1.5rem;
+  box-shadow: 0 2px 8px 0 rgba(45, 26, 16, 0.1);
+  padding: 0.5rem 2rem;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+  transition: background 0.2s, color 0.2s;
+}
+.sneako-cta:hover {
+  background: var(--sneako-gold);
+  color: var(--sneako-dark);
 }

@@ -1,6 +1,6 @@
 import { Layout, AuthLayout, AdminLayout } from "@/layouts";
-import { Home, Login, Register } from "@/pages";
-import UserProfile from "@/pages/UserProfile";
+import { Home, Login, Register, ErrorPage, UserProfile } from "@/pages";
+
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import { createBrowserRouter } from "react-router-dom";
 import MyOrders from "@/pages/Order/MyOrders";
@@ -10,7 +10,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
-    errorElement: <div>Not Found</div>,
+    errorElement: <ErrorPage />,
     children: [
       {
         index: true,
