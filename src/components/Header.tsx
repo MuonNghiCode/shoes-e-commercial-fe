@@ -1,8 +1,9 @@
+import React, { useRef, useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "react-router-dom";
-import { useRef, useState, useEffect } from "react";
 import UserDropdown from "./UserDropdown";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle, FaBars } from "react-icons/fa";
+import { AnimatePresence, motion } from "framer-motion";
 
 const NAV_LINKS = [
   { label: "Home", to: "/" },
@@ -12,7 +13,11 @@ const NAV_LINKS = [
   { label: "Contact", to: "/contact" },
 ];
 
-const Header = ({ isAdminLayout = false }: { isAdminLayout?: boolean }) => {
+interface HeaderProps {
+  isAdminLayout?: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
   const { isAuthenticated, user, logout } = useAuth();
   const location = useLocation();
   // Dropdown state and click outside logic
@@ -20,6 +25,7 @@ const Header = ({ isAdminLayout = false }: { isAdminLayout?: boolean }) => {
   const [dropdownOpenMobile, setDropdownOpenMobile] = useState(false);
   const profileBtnRef = useRef<HTMLButtonElement>(null);
   const profileBtnMobileRef = useRef<HTMLButtonElement>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -81,40 +87,71 @@ const Header = ({ isAdminLayout = false }: { isAdminLayout?: boolean }) => {
 
   // User Header
   return (
-    <header className="relative z-50 w-full sneako-header-modern">
+    <motion.header
+      className="relative z-50 w-full sneako-header-modern"
+      initial={{ opacity: 0, y: -40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-10 py-3 md:py-4">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-4 select-none">
-          <img
+        <motion.a
+          href="/"
+          className="flex items-center gap-3 select-none"
+          whileHover={{ scale: 1.06, rotate: -2 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        >
+          <motion.img
             src="/logo.webp"
             alt="Sneako Logo"
-            className="h-14 w-14 object-contain rounded-2xl shadow-lg border border-[#E6D4B6] bg-[#fff8]"
+            className="h-10 w-10 md:h-14 md:w-14 object-contain rounded-2xl shadow-lg border border-[#E6D4B6] bg-[#fff8]"
+            whileHover={{ rotate: 8, scale: 1.1 }}
+            transition={{ type: "spring", stiffness: 200 }}
           />
           <span
-            className="text-3xl font-black tracking-widest text-[#2D1A10]"
+            className="text-2xl md:text-3xl font-black tracking-widest text-[#2D1A10]"
             style={{ letterSpacing: 2 }}
           >
             Sneako
           </span>
-        </a>
-        {/* Nav */}
+        </motion.a>
+        {/* Nav desktop */}
         <nav className="hidden md:flex items-center gap-4 lg:gap-8 xl:gap-10">
           {NAV_LINKS.map((link) => (
-            <a
+            <motion.a
               key={link.to}
               href={link.to}
-              className={`sneako-nav-link text-lg${
-                location.pathname === link.to ? " active" : ""
-              }`}
+              className="relative sneako-nav-link text-lg px-2"
+              whileHover={{ scale: 1.08, color: "#c9b37c" }}
+              transition={{ type: "spring", stiffness: 300 }}
             >
-              {link.label}
-            </a>
+              <span
+                className={`relative z-10 ${
+                  location.pathname === link.to
+                    ? "text-[color:var(--sneako-gold)] font-bold"
+                    : ""
+                }`}
+              >
+                {link.label}
+              </span>
+              {/* Underline chỉ hiển thị trên mobile */}
+              <span
+                className={`absolute left-0 right-0 -bottom-1 h-[3px] rounded-full transition-all duration-300 md:hidden
+                  ${
+                    location.pathname === link.to
+                      ? "bg-[color:var(--sneako-gold)] opacity-80"
+                      : "bg-[color:var(--sneako-gold)] opacity-30"
+                  }
+                `}
+                style={{ width: "100%" }}
+              />
+            </motion.a>
           ))}
         </nav>
-        {/* CTA Button & User icon */}
-        <div className="flex items-center gap-4">
+        {/* CTA Button & User icon desktop */}
+        <div className="hidden md:flex items-center gap-4">
           {!isAuthenticated && (
-            <a href="/login" className="hidden md:inline-block sneako-cta">
+            <a href="/login" className="sneako-cta">
               Shop Now
             </a>
           )}
@@ -134,43 +171,112 @@ const Header = ({ isAdminLayout = false }: { isAdminLayout?: boolean }) => {
             </div>
           )}
         </div>
+        {/* Hamburger menu icon on mobile */}
+        <button
+          className="md:hidden flex items-center justify-center ml-auto text-3xl p-2 rounded focus:outline-none"
+          onClick={() => setMobileMenuOpen((open) => !open)}
+          aria-label="Open menu"
+        >
+          <FaBars />
+        </button>
       </div>
 
-      {/* Mobile nav */}
-      <nav className="flex md:hidden items-center justify-center gap-2 pb-2">
-        {NAV_LINKS.map((link) => (
-          <a
-            key={link.to}
-            href={link.to}
-            className={`sneako-nav-link text-base${
-              location.pathname === link.to ? " active" : ""
-            }`}
+      {/* Mobile menu overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            className="fixed top-0 left-0 w-screen h-screen z-50 flex"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            {link.label}
-          </a>
-        ))}
-        {!isAuthenticated && (
-          <a href="/login" className="ml-2 sneako-cta text-base">
-            Shop
-          </a>
-        )}
-        {isAuthenticated && (
-          <div className="relative ml-2">
-            <button onClick={logout}>Logout</button>
-            <button
-              className="flex items-center justify-center w-9 h-9 rounded-full bg-[#F5F5F3] border border-[#C9B37C] shadow focus:outline-none"
-              onClick={() => setDropdownOpenMobile((open) => !open)}
-              ref={profileBtnMobileRef}
-              aria-label="Tài khoản"
-              type="button"
+            {/* Overlay background */}
+            <motion.div
+              className="absolute top-0 left-0 w-screen h-screen bg-black/50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            {/* Slide-in menu */}
+            <motion.div
+              className="ml-auto h-full w-2/3 max-w-xs bg-white shadow-2xl rounded-l-3xl p-8 flex flex-col gap-8 relative"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
-              <FaUserCircle size={22} color="#2D1A10" />
-            </button>
-            {dropdownOpenMobile && <UserDropdown onLogout={logout} />}
-          </div>
+              <button
+                className="absolute top-4 right-6 text-3xl p-2"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Đóng menu"
+              >
+                ×
+              </button>
+              <nav className="flex flex-col gap-6 mt-8">
+                {NAV_LINKS.map((link) => (
+                  <a
+                    key={link.to}
+                    href={link.to}
+                    className="relative sneako-nav-link text-xl px-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span
+                      className={`relative z-10 ${
+                        location.pathname === link.to
+                          ? "text-[color:var(--sneako-gold)] font-bold"
+                          : ""
+                      }`}
+                    >
+                      {link.label}
+                    </span>
+                    <span
+                      className={`absolute left-0 right-0 -bottom-1 h-[3px] rounded-full transition-all duration-300
+                      ${
+                        location.pathname === link.to
+                          ? "bg-[color:var(--sneako-gold)] opacity-80"
+                          : "bg-[color:var(--sneako-gold)] opacity-30"
+                      }
+                    `}
+                      style={{ width: "100%" }}
+                    />
+                  </a>
+                ))}
+                {!isAuthenticated && (
+                  <a
+                    href="/login"
+                    className="sneako-cta text-lg"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Shop Now
+                  </a>
+                )}
+                {isAuthenticated && (
+                  <div className="flex flex-col gap-2">
+                    <button onClick={logout} className="sneako-cta text-lg">
+                      Logout
+                    </button>
+                    <button
+                      className="flex items-center justify-center w-10 h-10 rounded-full bg-[#F5F5F3] border border-[#C9B37C] shadow focus:outline-none mx-auto"
+                      onClick={() => setDropdownOpenMobile((open) => !open)}
+                      ref={profileBtnMobileRef}
+                      aria-label="Tài khoản"
+                      type="button"
+                    >
+                      <FaUserCircle size={22} color="#2D1A10" />
+                    </button>
+                    {dropdownOpenMobile && <UserDropdown onLogout={logout} />}
+                  </div>
+                )}
+              </nav>
+            </motion.div>
+          </motion.div>
         )}
-      </nav>
-    </header>
+      </AnimatePresence>
+
+      {/* Mobile nav */}
+    </motion.header>
   );
 };
 
