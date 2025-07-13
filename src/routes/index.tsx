@@ -3,7 +3,7 @@ import { Home, Login, Register } from "@/pages";
 import UserProfile from "@/pages/UserProfile";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import { createBrowserRouter } from "react-router-dom";
-import MyOrders from "@/pages/MyOrders";
+import MyOrders from "@/pages/Oder/MyOrders";
 
 const router = createBrowserRouter([
   {
