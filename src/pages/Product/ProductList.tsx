@@ -1,4 +1,13 @@
-const shoes = [
+import { useState } from "react";
+import ViewProduct from "./ViewProduct";
+type Shoe = {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+};
+
+const shoes: Shoe[] = [
   {
     id: 1,
     name: "Nike Air Max 270",
@@ -21,7 +30,21 @@ const shoes = [
       "https://www.converse.com/on/demandware.static/-/Sites-converse-master-catalog/default/dw2e2e2e2e/images/a_107/162050C_A_107X1.jpg",
   },
 ];
+
 export default function ProductList() {
+  const [selectedShoe, setSelectedShoe] = useState<Shoe | null>(null);
+  const [showPopup, setShowPopup] = useState(false);
+
+  const handleViewDetails = (shoe: Shoe) => {
+    setSelectedShoe(shoe);
+    setShowPopup(true);
+  };
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
+    setSelectedShoe(null);
+  };
+
   return (
     <div>
       <h1>Product List</h1>
@@ -42,12 +65,26 @@ export default function ProductList() {
             <div className="text-blue-600 font-bold mb-2">
               {shoe.price.toLocaleString()} đ
             </div>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-              Thêm vào giỏ
-            </button>
+            <div>
+              <button
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-2"
+                onClick={() => handleViewDetails(shoe)}
+              >
+                View Details
+              </button>
+            </div>
+            <div>
+              <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-2">
+                Thêm vào giỏ
+              </button>
+            </div>
           </div>
         ))}
       </div>
+
+      {showPopup && selectedShoe && (
+        <ViewProduct shoe={selectedShoe} onClose={handleClosePopup} />
+      )}
     </div>
   );
 }
