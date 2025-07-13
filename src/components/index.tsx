@@ -1,0 +1,10 @@
+export { default as Header } from "./Header";
+export { default as Footer } from "./Footer";
+export { default as ShoeListSection } from "./home/ShoeListSection";
+export { default as AboutUsSection } from "./home/AboutUsSection";
+export { default as HeroSection } from "./home/HeroSection";
+export { default as IntroduceSection } from "./home/IntroduceSection";
+export { default as Sidebar } from "./Sidebar";
+export { default as Particles } from "./Particles";
+export { default as ShoeSvg } from "./ShoeSvg";
+export { default as ShoeCard } from "./products/ShoeCard";
