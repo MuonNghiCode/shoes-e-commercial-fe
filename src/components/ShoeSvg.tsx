@@ -1,6 +1,16 @@
 import React from "react";
 
-const ShoeSvg = ({ color = "#c9b37c", size = 32, style = {} }) => (
+interface ShoeSvgProps {
+  color?: string;
+  size?: number;
+  style?: React.CSSProperties;
+}
+
+const ShoeSvg: React.FC<ShoeSvgProps> = ({
+  color = "#c9b37c",
+  size = 32,
+  style = {},
+}) => (
   <svg
     width={size}
     height={size * 0.6}
