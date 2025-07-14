@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { Particles } from "@/components";
 
-const Login = () => {
+const Login: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -25,9 +28,15 @@ const Login = () => {
     }
   };
 
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
   return (
-    <div
-      className="w-screen h-screen flex"
+    <section
+      className="w-screen h-[100dvh] flex overflow-hidden"
       style={{
         fontFamily: "Montserrat, serif",
         minWidth: "100vw",
@@ -35,6 +44,7 @@ const Login = () => {
           "linear-gradient(120deg, var(--sneako-beige) 0%, #fff 60%, var(--sneako-gold) 100%)",
       }}
     >
+      <Particles />
       {/* Left: Image section */}
       <motion.div
         initial={{ opacity: 0, x: -60 }}
@@ -89,6 +99,33 @@ const Login = () => {
           onSubmit={handleSubmit}
           className="w-full max-w-[520px] flex flex-col justify-center items-center gap-10 px-8 py-12"
         >
+          <motion.div
+            className="w-full flex justify-start mb-2"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <a
+              href="/"
+              className="flex items-center gap-2 text-base text-[color:var(--sneako-gold)] font-semibold hover:underline hover:text-[color:var(--sneako-dark)] transition"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 19.5L8.25 12l7.5-7.5"
+                />
+              </svg>
+              Về trang chủ
+            </a>
+          </motion.div>
           <motion.img
             src="/logo.webp"
             alt="Sneako Logo"
@@ -133,13 +170,13 @@ const Login = () => {
               />
               <label
                 htmlFor="login-username"
-                className={`absolute left-7 top-1/2 -translate-y-1/2 text-lg font-light text-[color:var(--sneako-beige)] pointer-events-none transition-all duration-200
-                  peer-focus:-top-4 peer-focus:text-sm peer-focus:text-[color:var(--sneako-gold)]
+                className={`absolute left-7 text-lg font-light text-[color:var(--sneako-beige)] pointer-events-none transition-all duration-200
                   ${
                     username
                       ? "-top-4 text-sm text-[color:var(--sneako-gold)]"
-                      : ""
-                  }`}
+                      : "top-1/2 -translate-y-1/2"
+                  }
+                  peer-focus:-top-4 peer-focus:text-sm peer-focus:text-[color:var(--sneako-gold)]`}
               >
                 Tên đăng nhập
               </label>
@@ -147,26 +184,35 @@ const Login = () => {
             {/* Floating label for password */}
             <div className="relative">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="login-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`peer w-full px-7 py-5 border-2 border-[color:var(--sneako-gold)]/70 rounded-2xl focus:outline-none bg-white/80 text-[color:var(--sneako-dark)] text-lg shadow-lg transition placeholder-transparent font-semibold`}
+                className={`peer w-full px-7 py-5 border-2 border-[color:var(--sneako-gold)]/70 rounded-2xl focus:outline-none bg-white/80 text-[color:var(--sneako-dark)] text-lg shadow-lg transition placeholder-transparent font-semibold pr-14`}
                 placeholder="Mật khẩu"
                 required
               />
               <label
                 htmlFor="login-password"
-                className={`absolute left-7 top-1/2 -translate-y-1/2 text-lg font-light text-[color:var(--sneako-beige)] pointer-events-none transition-all duration-200
-                  peer-focus:-top-4 peer-focus:text-sm peer-focus:text-[color:var(--sneako-gold)]
+                className={`absolute left-7 text-lg font-light text-[color:var(--sneako-beige)] pointer-events-none transition-all duration-200
                   ${
                     password
                       ? "-top-4 text-sm text-[color:var(--sneako-gold)]"
-                      : ""
-                  }`}
+                      : "top-1/2 -translate-y-1/2"
+                  }
+                  peer-focus:-top-4 peer-focus:text-sm peer-focus:text-[color:var(--sneako-gold)]`}
               >
                 Mật khẩu
               </label>
+              <button
+                type="button"
+                tabIndex={-1}
+                className="absolute right-6 top-1/2 -translate-y-1/2 text-2xl text-[color:var(--sneako-gold)] focus:outline-none bg-transparent"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
           </motion.div>
           <motion.div
@@ -208,7 +254,7 @@ const Login = () => {
           </motion.div>
         </form>
       </motion.div>
-    </div>
+    </section>
   );
 };
 
