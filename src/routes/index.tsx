@@ -1,10 +1,15 @@
 import { Layout, AuthLayout, AdminLayout } from "@/layouts";
 import { Home, Login, Register, ErrorPage, UserProfile } from "@/pages";
+import AdminDashboard from "@/pages/Admin/AdminDashboard";
+import UserManagement from "@/pages/Admin/UserManagement";
+import ProductManagement from "@/pages/Admin/ProductManagement";
 
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import { createBrowserRouter } from "react-router-dom";
 import MyOrders from "@/pages/Order/MyOrders";
 import ProductList from "@/pages/Product/ProductList";
+import ProductDetail from "@/pages/Product/ProductDetail";
+import Cart from "@/pages/Cart";
 
 const router = createBrowserRouter([
   {
@@ -17,16 +22,36 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "user-profile",
-        element: <UserProfile />,
+        path: "profile",
+        element: (
+          <ProtectedRoute>
+            <UserProfile />
+          </ProtectedRoute>
+        ),
       },
       {
-        path: "user-orders",
-        element: <MyOrders />,
+        path: "orders",
+        element: (
+          <ProtectedRoute>
+            <MyOrders />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "cart",
+        element: (
+          <ProtectedRoute>
+            <Cart />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "user-productList",
         element: <ProductList />,
+      },
+      {
+        path: "product/:id",
+        element: <ProductDetail />,
       },
     ],
   },
@@ -54,15 +79,15 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <div>Admin Home</div>,
+        element: <AdminDashboard />,
       },
       {
         path: "users",
-        element: <div>Quản lý người dùng</div>,
+        element: <UserManagement />,
       },
       {
         path: "products",
-        element: <div>Quản lý sản phẩm</div>,
+        element: <ProductManagement />,
       },
     ],
   },
