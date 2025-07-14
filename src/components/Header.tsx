@@ -25,19 +25,27 @@ const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
   const [dropdownOpenMobile, setDropdownOpenMobile] = useState(false);
   const profileBtnRef = useRef<HTMLButtonElement>(null);
   const profileBtnMobileRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownMobileRef = useRef<HTMLDivElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      // Check desktop dropdown
       if (
         profileBtnRef.current &&
-        !profileBtnRef.current.contains(event.target as Node)
+        !profileBtnRef.current.contains(event.target as Node) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
       ) {
         setDropdownOpen(false);
       }
+      // Check mobile dropdown
       if (
         profileBtnMobileRef.current &&
-        !profileBtnMobileRef.current.contains(event.target as Node)
+        !profileBtnMobileRef.current.contains(event.target as Node) &&
+        dropdownMobileRef.current &&
+        !dropdownMobileRef.current.contains(event.target as Node)
       ) {
         setDropdownOpenMobile(false);
       }
@@ -50,7 +58,7 @@ const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
 
   if (isAdminLayout) {
     return (
-      <header className="flex justify-between items-center px-8 py-3 w-full sneako-header-modern">
+      <header className="flex justify-between items-center px-8 py-3 w-full sneako-header-modern fixed z-50">
         <a
           href="/admin"
           className="flex items-center gap-3 text-2xl font-black tracking-widest select-none"
@@ -167,7 +175,13 @@ const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
               >
                 <FaUserCircle size={28} color="#2D1A10" />
               </button>
-              {dropdownOpen && <UserDropdown onLogout={logout} />}
+              {dropdownOpen && (
+                <UserDropdown
+                  ref={dropdownRef}
+                  onLogout={logout}
+                  onClose={() => setDropdownOpen(false)}
+                />
+              )}
             </div>
           )}
         </div>
@@ -266,7 +280,13 @@ const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
                     >
                       <FaUserCircle size={22} color="#2D1A10" />
                     </button>
-                    {dropdownOpenMobile && <UserDropdown onLogout={logout} />}
+                    {dropdownOpenMobile && (
+                      <UserDropdown
+                        ref={dropdownMobileRef}
+                        onLogout={logout}
+                        onClose={() => setDropdownOpenMobile(false)}
+                      />
+                    )}
                   </div>
                 )}
               </nav>
