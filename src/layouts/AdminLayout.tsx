@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import Header from "@/components/Header";
-import Sidebar from "@/components/Sidebar";
+
+import { Header, Sidebar } from "@/components";
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile mặc định đóng
