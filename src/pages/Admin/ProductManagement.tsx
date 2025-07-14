@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { ProductModal } from "../../components/modals";
-import { Plus, Edit2, Trash2 } from "../../lib/icons";
 
 interface Product {
   id: number;
@@ -61,6 +59,16 @@ const ProductManagement = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [newProduct, setNewProduct] = useState<Product>({
+    id: 0,
+    name: "",
+    brand: "",
+    price: 0,
+    category: "",
+    stock: 0,
+    image: "/shoes.webp",
+    description: "",
+  });
 
   const categories = ["Sneakers", "Running", "Casual", "Formal", "Sports"];
   const brands = ["Nike", "Adidas", "Converse", "Puma", "Vans", "New Balance"];
@@ -81,24 +89,34 @@ const ProductManagement = () => {
     }).format(amount);
   };
 
-  const handleSaveProduct = (productData: Omit<Product, "id"> | Product) => {
-    if ("id" in productData) {
-      // Update existing product
-      setProducts(
-        products.map((product) =>
-          product.id === productData.id ? productData : product
-        )
-      );
-    } else {
-      // Add new product
+  const handleAddProduct = () => {
+    if (newProduct.name && newProduct.brand && newProduct.price > 0) {
       const id = Math.max(...products.map((p) => p.id)) + 1;
-      setProducts([...products, { ...productData, id }]);
+      setProducts([...products, { ...newProduct, id }]);
+      resetForm();
     }
   };
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
+    setNewProduct({ ...product });
     setShowAddModal(true);
+  };
+
+  const handleUpdateProduct = () => {
+    if (
+      editingProduct &&
+      newProduct.name &&
+      newProduct.brand &&
+      newProduct.price > 0
+    ) {
+      setProducts(
+        products.map((product) =>
+          product.id === editingProduct.id ? { ...newProduct } : product
+        )
+      );
+      resetForm();
+    }
   };
 
   const handleDeleteProduct = (id: number) => {
@@ -107,9 +125,19 @@ const ProductManagement = () => {
     }
   };
 
-  const closeModal = () => {
+  const resetForm = () => {
     setShowAddModal(false);
     setEditingProduct(null);
+    setNewProduct({
+      id: 0,
+      name: "",
+      brand: "",
+      price: 0,
+      category: "",
+      stock: 0,
+      image: "/shoes.webp",
+      description: "",
+    });
   };
 
   const getStockStatus = (stock: number) => {
@@ -136,12 +164,8 @@ const ProductManagement = () => {
               Quản lý danh mục sản phẩm giày dép
             </p>
           </div>
-          <button
-            className="sneako-cta flex items-center gap-2"
-            onClick={() => setShowAddModal(true)}
-          >
-            <Plus size={16} />
-            Thêm sản phẩm
+          <button className="sneako-cta" onClick={() => setShowAddModal(true)}>
+            + Thêm sản phẩm
           </button>
         </div>
 
@@ -222,57 +246,52 @@ const ProductManagement = () => {
 
                   <div className="mb-3">
                     <p
-                      className="font-bold text-xl"
-                      style={{ color: "var(--sneako-gold)" }}
+                      className="font-semibold text-lg"
+                      style={{ color: "var(--sneako-dark)" }}
                     >
                       {formatCurrency(product.price)}
                     </p>
+                    <p
+                      className="text-sm"
+                      style={{ color: "var(--sneako-dark)" }}
+                    >
+                      Danh mục: {product.category}
+                    </p>
+                  </div>
+
+                  <div className="mb-4">
                     <div className="flex justify-between items-center">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${stockStatus.color}`}
-                      >
-                        {stockStatus.text}
-                      </span>
                       <span
                         className="text-sm"
                         style={{ color: "var(--sneako-dark)" }}
                       >
-                        SL: {product.stock}
+                        Tồn kho: {product.stock}
+                      </span>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${stockStatus.color}`}
+                      >
+                        {stockStatus.text}
                       </span>
                     </div>
-                  </div>
-
-                  <div className="mb-4">
-                    <span
-                      className="px-2 py-1 rounded text-xs border"
-                      style={{
-                        borderColor: "var(--sneako-gold)",
-                        color: "var(--sneako-dark)",
-                      }}
-                    >
-                      {product.category}
-                    </span>
                   </div>
 
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEditProduct(product)}
-                      className="p-2 text-sm font-medium rounded border hover:opacity-80 transition-opacity"
+                      className="flex-1 px-3 py-2 text-sm font-medium rounded border"
                       style={{
                         borderColor: "var(--sneako-gold)",
                         color: "var(--sneako-dark)",
                         background: "var(--sneako-gray)",
                       }}
-                      title="Sửa"
                     >
-                      <Edit2 size={16} />
+                      Sửa
                     </button>
                     <button
                       onClick={() => handleDeleteProduct(product.id)}
-                      className="p-2 text-sm font-medium rounded bg-red-100 text-red-800 border border-red-200 hover:bg-red-200 transition-colors"
-                      title="Xóa"
+                      className="flex-1 px-3 py-2 text-sm font-medium rounded bg-red-100 text-red-800 border border-red-200"
                     >
-                      <Trash2 size={16} />
+                      Xóa
                     </button>
                   </div>
                 </div>
@@ -343,15 +362,191 @@ const ProductManagement = () => {
           </div>
         </div>
 
-        {/* Product Modal */}
-        <ProductModal
-          isOpen={showAddModal}
-          onClose={closeModal}
-          product={editingProduct}
-          onSave={handleSaveProduct}
-          brands={brands}
-          categories={categories}
-        />
+        {/* Add/Edit Product Modal */}
+        {showAddModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div
+              className="p-6 rounded-lg shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto"
+              style={{
+                background: "var(--sneako-beige)",
+                border: "2px solid var(--sneako-gold)",
+              }}
+            >
+              <h3
+                className="text-lg font-bold mb-4"
+                style={{ color: "var(--sneako-dark)" }}
+              >
+                {editingProduct ? "Sửa sản phẩm" : "Thêm sản phẩm mới"}
+              </h3>
+
+              <div className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="productName"
+                    className="block text-sm font-medium mb-1"
+                    style={{ color: "var(--sneako-dark)" }}
+                  >
+                    Tên sản phẩm
+                  </label>
+                  <input
+                    id="productName"
+                    type="text"
+                    value={newProduct.name}
+                    onChange={(e) =>
+                      setNewProduct({ ...newProduct, name: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    style={{ borderColor: "var(--sneako-gold)" }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="productBrand"
+                    className="block text-sm font-medium mb-1"
+                    style={{ color: "var(--sneako-dark)" }}
+                  >
+                    Thương hiệu
+                  </label>
+                  <select
+                    id="productBrand"
+                    value={newProduct.brand}
+                    onChange={(e) =>
+                      setNewProduct({ ...newProduct, brand: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    style={{ borderColor: "var(--sneako-gold)" }}
+                  >
+                    <option value="">Chọn thương hiệu</option>
+                    {brands.map((brand) => (
+                      <option key={brand} value={brand}>
+                        {brand}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="productCategory"
+                    className="block text-sm font-medium mb-1"
+                    style={{ color: "var(--sneako-dark)" }}
+                  >
+                    Danh mục
+                  </label>
+                  <select
+                    id="productCategory"
+                    value={newProduct.category}
+                    onChange={(e) =>
+                      setNewProduct({ ...newProduct, category: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    style={{ borderColor: "var(--sneako-gold)" }}
+                  >
+                    <option value="">Chọn danh mục</option>
+                    {categories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="productPrice"
+                      className="block text-sm font-medium mb-1"
+                      style={{ color: "var(--sneako-dark)" }}
+                    >
+                      Giá (VND)
+                    </label>
+                    <input
+                      id="productPrice"
+                      type="number"
+                      value={newProduct.price}
+                      onChange={(e) =>
+                        setNewProduct({
+                          ...newProduct,
+                          price: Number(e.target.value),
+                        })
+                      }
+                      className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                      style={{ borderColor: "var(--sneako-gold)" }}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="productStock"
+                      className="block text-sm font-medium mb-1"
+                      style={{ color: "var(--sneako-dark)" }}
+                    >
+                      Tồn kho
+                    </label>
+                    <input
+                      id="productStock"
+                      type="number"
+                      value={newProduct.stock}
+                      onChange={(e) =>
+                        setNewProduct({
+                          ...newProduct,
+                          stock: Number(e.target.value),
+                        })
+                      }
+                      className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                      style={{ borderColor: "var(--sneako-gold)" }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="productDescription"
+                    className="block text-sm font-medium mb-1"
+                    style={{ color: "var(--sneako-dark)" }}
+                  >
+                    Mô tả
+                  </label>
+                  <textarea
+                    id="productDescription"
+                    value={newProduct.description}
+                    onChange={(e) =>
+                      setNewProduct({
+                        ...newProduct,
+                        description: e.target.value,
+                      })
+                    }
+                    rows={3}
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    style={{ borderColor: "var(--sneako-gold)" }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={
+                    editingProduct ? handleUpdateProduct : handleAddProduct
+                  }
+                  className="sneako-cta flex-1"
+                >
+                  {editingProduct ? "Cập nhật" : "Thêm"}
+                </button>
+                <button
+                  onClick={resetForm}
+                  className="flex-1 px-4 py-2 border rounded font-medium"
+                  style={{
+                    borderColor: "var(--sneako-gold)",
+                    color: "var(--sneako-dark)",
+                    background: "var(--sneako-gray)",
+                  }}
+                >
+                  Hủy
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,46 +1,58 @@
 import { useState } from "react";
 import { users as mockUsers, type User } from "@/mocks/users";
-import { UserModal } from "../../components/modals";
-import { Plus, Edit2, Trash2 } from "../../lib/icons";
 
 const UserManagement = () => {
   const [users, setUsers] = useState<User[]>(mockUsers);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [newUser, setNewUser] = useState<User>({
+    username: "",
+    password: "",
+    role: "user",
+  });
 
   const filteredUsers = users.filter((user) =>
     user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddUser = (userData: User) => {
-    if (editingUser) {
-      // Update existing user
-      setUsers(
-        users.map((user) =>
-          user.username === editingUser.username ? userData : user
-        )
-      );
-    } else {
-      // Add new user
-      setUsers([...users, userData]);
+  const handleAddUser = () => {
+    if (newUser.username && newUser.password) {
+      setUsers([...users, { ...newUser }]);
+      setNewUser({ username: "", password: "", role: "user" });
+      setShowAddModal(false);
     }
   };
 
   const handleEditUser = (user: User) => {
     setEditingUser(user);
+    setNewUser({ ...user });
     setShowAddModal(true);
   };
 
-  const closeModal = () => {
-    setShowAddModal(false);
-    setEditingUser(null);
+  const handleUpdateUser = () => {
+    if (editingUser && newUser.username && newUser.password) {
+      setUsers(
+        users.map((user) =>
+          user.username === editingUser.username ? { ...newUser } : user
+        )
+      );
+      setEditingUser(null);
+      setNewUser({ username: "", password: "", role: "user" });
+      setShowAddModal(false);
+    }
   };
 
   const handleDeleteUser = (username: string) => {
     if (confirm(`Bạn có chắc chắn muốn xóa người dùng ${username}?`)) {
       setUsers(users.filter((user) => user.username !== username));
     }
+  };
+
+  const closeModal = () => {
+    setShowAddModal(false);
+    setEditingUser(null);
+    setNewUser({ username: "", password: "", role: "user" });
   };
 
   return (
@@ -59,12 +71,8 @@ const UserManagement = () => {
               Quản lý tài khoản người dùng hệ thống
             </p>
           </div>
-          <button
-            className="sneako-cta flex items-center gap-2"
-            onClick={() => setShowAddModal(true)}
-          >
-            <Plus size={16} />
-            Thêm người dùng
+          <button className="sneako-cta" onClick={() => setShowAddModal(true)}>
+            + Thêm người dùng
           </button>
         </div>
 
@@ -173,23 +181,21 @@ const UserManagement = () => {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEditUser(user)}
-                          className="p-2 text-xs font-medium rounded border hover:opacity-80 transition-opacity"
+                          className="px-3 py-1 text-xs font-medium rounded border"
                           style={{
                             borderColor: "var(--sneako-gold)",
                             color: "var(--sneako-dark)",
                             background: "var(--sneako-gray)",
                           }}
-                          title="Sửa"
                         >
-                          <Edit2 size={14} />
+                          Sửa
                         </button>
                         {user.username !== "admin" && (
                           <button
                             onClick={() => handleDeleteUser(user.username)}
-                            className="p-2 text-xs font-medium rounded bg-red-100 text-red-800 border border-red-200 hover:bg-red-200 transition-colors"
-                            title="Xóa"
+                            className="px-3 py-1 text-xs font-medium rounded bg-red-100 text-red-800 border border-red-200"
                           >
-                            <Trash2 size={14} />
+                            Xóa
                           </button>
                         )}
                       </div>
@@ -201,13 +207,119 @@ const UserManagement = () => {
           </div>
         </div>
 
-        {/* User Modal */}
-        <UserModal
-          isOpen={showAddModal}
-          onClose={closeModal}
-          user={editingUser}
-          onSave={handleAddUser}
-        />
+        {/* Add/Edit User Modal */}
+        {showAddModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div
+              className="p-6 rounded-lg shadow-lg w-full max-w-md"
+              style={{
+                background: "var(--sneako-beige)",
+                border: "2px solid var(--sneako-gold)",
+              }}
+            >
+              <h3
+                className="text-lg font-bold mb-4"
+                style={{ color: "var(--sneako-dark)" }}
+              >
+                {editingUser ? "Sửa người dùng" : "Thêm người dùng mới"}
+              </h3>
+
+              <div className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="username"
+                    className="block text-sm font-medium mb-1"
+                    style={{ color: "var(--sneako-dark)" }}
+                  >
+                    Tên đăng nhập
+                  </label>
+                  <input
+                    id="username"
+                    type="text"
+                    value={newUser.username}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, username: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    style={{
+                      borderColor: "var(--sneako-gold)",
+                    }}
+                    disabled={!!editingUser}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium mb-1"
+                    style={{ color: "var(--sneako-dark)" }}
+                  >
+                    Mật khẩu
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    value={newUser.password}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, password: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    style={{
+                      borderColor: "var(--sneako-gold)",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="role"
+                    className="block text-sm font-medium mb-1"
+                    style={{ color: "var(--sneako-dark)" }}
+                  >
+                    Vai trò
+                  </label>
+                  <select
+                    id="role"
+                    value={newUser.role}
+                    onChange={(e) =>
+                      setNewUser({
+                        ...newUser,
+                        role: e.target.value as "admin" | "user",
+                      })
+                    }
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    style={{
+                      borderColor: "var(--sneako-gold)",
+                    }}
+                  >
+                    <option value="user">Người dùng</option>
+                    <option value="admin">Quản trị viên</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={editingUser ? handleUpdateUser : handleAddUser}
+                  className="sneako-cta flex-1"
+                >
+                  {editingUser ? "Cập nhật" : "Thêm"}
+                </button>
+                <button
+                  onClick={closeModal}
+                  className="flex-1 px-4 py-2 border rounded font-medium"
+                  style={{
+                    borderColor: "var(--sneako-gold)",
+                    color: "var(--sneako-dark)",
+                    background: "var(--sneako-gray)",
+                  }}
+                >
+                  Hủy
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
