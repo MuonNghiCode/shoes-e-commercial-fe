@@ -29,6 +29,12 @@ const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      // Kiểm tra xem click có phải là Link trong dropdown không
+      const target = event.target as HTMLElement;
+      if (target.closest("a[href]")) {
+        return; // Không đóng dropdown nếu click vào Link
+      }
+
       if (
         profileBtnRef.current &&
         !profileBtnRef.current.contains(event.target as Node)
@@ -157,7 +163,6 @@ const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
           )}
           {isAuthenticated && (
             <div className="relative">
-              <button onClick={logout}>Logout</button>
               <button
                 className="flex items-center justify-center w-11 h-11 rounded-full bg-[#F5F5F3] border border-[#C9B37C] shadow hover:scale-105 transition focus:outline-none"
                 onClick={() => setDropdownOpen((open) => !open)}
@@ -167,7 +172,12 @@ const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
               >
                 <FaUserCircle size={28} color="#2D1A10" />
               </button>
-              {dropdownOpen && <UserDropdown onLogout={logout} />}
+              {dropdownOpen && (
+                <UserDropdown
+                  onClose={() => setDropdownOpen(false)}
+                  onLogout={logout}
+                />
+              )}
             </div>
           )}
         </div>
@@ -254,9 +264,6 @@ const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
                 )}
                 {isAuthenticated && (
                   <div className="flex flex-col gap-2">
-                    <button onClick={logout} className="sneako-cta text-lg">
-                      Logout
-                    </button>
                     <button
                       className="flex items-center justify-center w-10 h-10 rounded-full bg-[#F5F5F3] border border-[#C9B37C] shadow focus:outline-none mx-auto"
                       onClick={() => setDropdownOpenMobile((open) => !open)}
@@ -266,7 +273,12 @@ const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
                     >
                       <FaUserCircle size={22} color="#2D1A10" />
                     </button>
-                    {dropdownOpenMobile && <UserDropdown onLogout={logout} />}
+                    {dropdownOpenMobile && (
+                      <UserDropdown
+                        onLogout={logout}
+                        onClose={() => setDropdownOpenMobile(false)}
+                      />
+                    )}
                   </div>
                 )}
               </nav>

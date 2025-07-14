@@ -65,7 +65,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--sneako-gray)" }}>
-      <div className="p-6">
+      <div className="mx-auto">
         {/* Welcome Header */}
         <div className="mb-8">
           <h1
