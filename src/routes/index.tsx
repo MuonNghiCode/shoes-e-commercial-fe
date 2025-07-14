@@ -1,5 +1,8 @@
 import { Layout, AuthLayout, AdminLayout } from "@/layouts";
 import { Home, Login, Register, ErrorPage, UserProfile } from "@/pages";
+import AdminDashboard from "@/pages/Admin/AdminDashboard";
+import UserManagement from "@/pages/Admin/UserManagement";
+import ProductManagement from "@/pages/Admin/ProductManagement";
 
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import { createBrowserRouter } from "react-router-dom";
@@ -19,12 +22,20 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "user-profile",
-        element: <UserProfile />,
+        path: "profile",
+        element: (
+          <ProtectedRoute>
+            <UserProfile />
+          </ProtectedRoute>
+        ),
       },
       {
-        path: "user-orders",
-        element: <MyOrders />,
+        path: "orders",
+        element: (
+          <ProtectedRoute>
+            <MyOrders />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "user-productList",
@@ -64,15 +75,15 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <div>Admin Home</div>,
+        element: <AdminDashboard />,
       },
       {
         path: "users",
-        element: <div>Quản lý người dùng</div>,
+        element: <UserManagement />,
       },
       {
         path: "products",
-        element: <div>Quản lý sản phẩm</div>,
+        element: <ProductManagement />,
       },
     ],
   },
