@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   FaUserCircle,
@@ -15,20 +15,16 @@ interface UserDropdownProps {
 
 const UserDropdown = forwardRef<HTMLDivElement, UserDropdownProps>(
   ({ onLogout, onClose }, ref) => {
-    const navigate = useNavigate();
     const { user } = useAuth();
-
-    const handleLogout = () => {
-      onLogout();
-      navigate("/login");
-    };
 
     return (
       <div
         ref={ref}
         className="absolute right-0 mt-2 w-52 bg-white border rounded-xl shadow-lg z-50 animate-fadeIn overflow-hidden"
         style={{ borderColor: "#E6D4B6" }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
       >
         {/* User Info Header */}
         <div className="px-4 py-3 border-b" style={{ borderColor: "#E6D4B6" }}>
@@ -56,13 +52,17 @@ const UserDropdown = forwardRef<HTMLDivElement, UserDropdownProps>(
         </div>
         {/* User Options */}
         <div className="py-1">
-          {" "}
           <Link
             to="/profile"
             className="w-full flex items-center px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
             style={{ color: "var(--sneako-dark)" }}
             onClick={() => {
-              onClose?.();
+              // Delay việc đóng dropdown để Link có thời gian điều hướng
+              setTimeout(() => {
+                if (onClose) {
+                  onClose();
+                }
+              }, 100);
             }}
           >
             <FaUserCircle size={16} className="mr-3" />
@@ -73,7 +73,12 @@ const UserDropdown = forwardRef<HTMLDivElement, UserDropdownProps>(
             className="w-full flex items-center px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
             style={{ color: "var(--sneako-dark)" }}
             onClick={() => {
-              onClose?.();
+              // Delay việc đóng dropdown để Link có thời gian điều hướng
+              setTimeout(() => {
+                if (onClose) {
+                  onClose();
+                }
+              }, 100);
             }}
           >
             <FaClipboardList size={16} className="mr-3" />
@@ -99,7 +104,12 @@ const UserDropdown = forwardRef<HTMLDivElement, UserDropdownProps>(
                 className="w-full flex items-center px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
                 style={{ color: "var(--sneako-gold)" }}
                 onClick={() => {
-                  onClose?.();
+                  // Delay việc đóng dropdown để Link có thời gian điều hướng
+                  setTimeout(() => {
+                    if (onClose) {
+                      onClose();
+                    }
+                  }, 100);
                 }}
               >
                 <FaCog size={16} className="mr-3" />
@@ -107,15 +117,24 @@ const UserDropdown = forwardRef<HTMLDivElement, UserDropdownProps>(
               </Link>
             </>
           )}
-        </div>{" "}
+        </div>
         {/* Logout Section */}
         <div className="border-t" style={{ borderColor: "#E6D4B6" }}>
           <button
-            onClick={() => {
-              onClose?.();
-              handleLogout();
+            className="w-full flex items-center px-4 py-2 text-sm hover:bg-red-50 transition-colors text-red-600 cursor-pointer"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+
+              // Call the logout function from props
+              onLogout();
+
+              // Close dropdown
+              if (onClose) {
+                onClose();
+              }
             }}
-            className="w-full flex items-center px-4 py-2 text-sm hover:bg-red-50 transition-colors text-red-600"
+            type="button"
           >
             <FaSignOutAlt size={16} className="mr-3" />
             Đăng xuất
