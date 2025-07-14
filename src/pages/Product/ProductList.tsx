@@ -34,7 +34,7 @@ const ProductList = () => {
   const navigate = useNavigate();
 
   const handleViewDetails = (shoe: Shoe) => {
-    navigate(`/productDetail/${shoe.id}`);
+    navigate(`/product/${shoe.id}`);
   };
 
   return (
