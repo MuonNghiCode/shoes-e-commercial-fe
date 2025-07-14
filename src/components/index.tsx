@@ -8,3 +8,4 @@ export { default as Sidebar } from "./Sidebar";
 export { default as Particles } from "./Particles";
 export { default as ShoeSvg } from "./ShoeSvg";
 export { default as ShoeCard } from "./products/ShoeCard";
+export { default as ShoeLineCard } from "./products/ShoeLineCard";
