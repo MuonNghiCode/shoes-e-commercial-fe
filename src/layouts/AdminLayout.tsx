@@ -5,17 +5,14 @@ import Sidebar from "@/components/Sidebar";
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile mặc định đóng
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 768);
       // Desktop thì luôn mở sidebar
       if (window.innerWidth >= 768) {
         setSidebarOpen(true);
       }
     };
-
     window.addEventListener("resize", handleResize);
     handleResize(); // Gọi ngay lần đầu
 

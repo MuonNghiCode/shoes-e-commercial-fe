@@ -1,5 +1,4 @@
 import { useParams } from "react-router-dom";
-import type { Shoe } from "../../mocks/shoes";
 import { shoes } from "../../mocks/shoes";
 
 const ProductDetail = () => {
