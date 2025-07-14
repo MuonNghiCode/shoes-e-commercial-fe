@@ -5,6 +5,8 @@ import ProtectedRoute from "@/routes/ProtectedRoute";
 import { createBrowserRouter } from "react-router-dom";
 import MyOrders from "@/pages/Order/MyOrders";
 import ProductList from "@/pages/Product/ProductList";
+import ProductDetail from "@/pages/Product/ProductDetail";
+import Cart from "@/pages/Cart";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +29,14 @@ const router = createBrowserRouter([
       {
         path: "user-productList",
         element: <ProductList />,
+      },
+      {
+        path: "product/:id",
+        element: <ProductDetail />,
+      },
+      {
+        path: "cart",
+        element: <Cart />,
       },
     ],
   },
