@@ -67,7 +67,7 @@ const Cart: React.FC = () => {
                   <tr key={item.id} className="border-b border-[#f7f3ea]">
                     <td className="flex items-center gap-4 p-3">
                       <img
-                        src={item.image}
+                        src={item.images[0]}
                         alt={item.name}
                         className="w-20 h-15 object-contain rounded-lg bg-[#faf9f6]"
                       />

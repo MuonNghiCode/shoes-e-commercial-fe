@@ -44,7 +44,7 @@ const CartDrawer: React.FC<{ open: boolean; onOpenChange: (open: boolean) => voi
             <ul className="flex flex-col gap-6">
               {cart.map((item) => (
                 <li key={item.id} className="flex items-center gap-4">
-                  <img src={item.image} alt={item.name} className="w-16 h-16 object-contain rounded bg-gray-100 border" />
+                  <img src={item.images[0]} alt={item.name} className="w-16 h-16 object-contain rounded bg-gray-100 border" />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-base truncate">{item.name}</div>
                     <div className="text-sm text-gray-500 mt-1">
