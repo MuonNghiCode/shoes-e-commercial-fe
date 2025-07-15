@@ -1,9 +1,10 @@
 import { Layout, AuthLayout, AdminLayout } from "@/layouts";
 import { Home, Login, Register, ErrorPage, UserProfile } from "@/pages";
-import AdminDashboard from "@/pages/Admin/AdminDashboard";
-import UserManagement from "@/pages/Admin/UserManagement";
-import ProductManagement from "@/pages/Admin/ProductManagement";
-
+import {
+  AdminDashboard,
+  UserManagement,
+  ProductManagement,
+} from "@/pages/Admin";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import { createBrowserRouter } from "react-router-dom";
 import MyOrders from "@/pages/Order/MyOrders";
