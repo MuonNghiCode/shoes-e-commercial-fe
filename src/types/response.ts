@@ -1,60 +1,67 @@
+import type { Product, Order, Account, Review } from "./entities";
 export interface ResponseModel<T> {
-    success: boolean;
-    message: string;
-    data: T;
+  success: boolean;
+  message: string;
+  data?: T;
+  error?: string;
 }
 
-export interface LoginRequest {
-    email: string;
-    password: string;
-  }
-  
-  export interface RegisterRequest {
-    name: string;
-    email: string;
-    password: string;
-    isAdmin?: boolean;
-  }
-  
-  // Profile requests
-  export interface UpdateProfileRequest {
-    name?: string;
-    email?: string;
-  }
-  
-  export interface ChangePasswordRequest {
-    currentPassword: string;
-    newPassword: string;
-  }
-  
-  // Product requests
-  export interface CreateProductRequest {
-    name: string;
-    price: number;
-    description?: string;
-    brand: string;
-    sizes: '38' | '39' | '40' | '41' | '42' | '43' | '44';
-    stock: number;
-    category: string;
-    images: string[] | string;
-  }
-  
-  export interface UpdateProductRequest extends Partial<CreateProductRequest> {}
-  
-  // Product response
-  import type { Product } from "./entities";
-  
-  export interface ProductResponseData {
-    product: Product;
-  }
-  
-  export interface ProductsResponseData {
-    products: Product[];
-  }
-  
-  export type ProductResponse = ResponseModel<ProductResponseData>;
-  export type ProductsResponse = ResponseModel<ProductsResponseData>;
-  export type CreateProductResponse = ResponseModel<Product>;
-  export type UpdateProductResponse = ResponseModel<Product>;
-  export type DeleteProductResponse = ResponseModel<{ message: string }>;
-  
+export interface ListResponseData<T> {
+  items: T[];
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  stats?: any;
+}
+
+// Auth responses
+export interface LoginResponseData {
+  token: string;
+  user: Pick<Account, '_id' | 'name' | 'email' | 'isAdmin'>;
+}
+
+export interface RegisterResponseData {
+  newUser: Pick<Account, '_id' | 'name' | 'email' | 'isAdmin'>;
+}
+
+// Product responses
+export interface ProductResponseData {
+  product: Product;
+}
+
+export interface ProductsResponseData {
+  products: Product[];
+}
+
+// Order responses
+export interface OrderResponseData {
+  order: Order;
+}
+
+export interface OrdersResponseData {
+  orders: Order[];
+}
+
+// Profile response
+export interface ProfileResponseData {
+  user: Pick<Account, '_id' | 'name' | 'email' | 'isAdmin'>;
+}
+
+// Review response
+export interface ReviewResponseData {
+  review: Review;
+}
+
+// Export type responses
+export type LoginResponse = ResponseModel<LoginResponseData>;
+export type RegisterResponse = ResponseModel<RegisterResponseData>;
+export type ProfileResponse = ResponseModel<ProfileResponseData>;
+export type ProductResponse = ResponseModel<ProductResponseData>;
+export type ProductsResponse = ResponseModel<ProductsResponseData>;
+export type OrderResponse = ResponseModel<OrderResponseData>;
+export type OrdersResponse = ResponseModel<OrdersResponseData>;
+export type ReviewResponse = ResponseModel<ReviewResponseData>;
+export type BaseResponse = ResponseModel<null>;
