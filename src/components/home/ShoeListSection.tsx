@@ -5,16 +5,7 @@ import ShoeLineCard from "../products/ShoeLineCard";
 import Particles from "../Particles";
 import { shoes, shoeLines } from "@/mocks/shoes";
 
-const fallbackImg = "https://via.placeholder.com/224x224?text=No+Image";
-const shoeLinesWithImg = shoeLines
-  .map((def) => {
-    const found = shoes.find((s) => s.id === def.id);
-    return {
-      line: def.line,
-      image: found?.image || fallbackImg,
-    };
-  })
-  .filter((v, i, arr) => arr.findIndex((x) => x.line === v.line) === i);
+// Sử dụng trực tiếp shoeLines từ mock (theo category)
 
 const ShoeListSection: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -83,9 +74,9 @@ const ShoeListSection: React.FC = () => {
               className="flex gap-6 overflow-x-auto scrollbar-hide px-2 py-2 overflow-hidden"
               style={{ scrollBehavior: "smooth" }}
             >
-              {shoeLinesWithImg.map((line, idx) => (
+              {shoeLines.map((line, idx) => (
                 <motion.div
-                  key={line.line}
+                  key={line.category}
                   className="h-56 min-w-[14rem] max-w-[14rem] flex-shrink-0"
                   initial={{ opacity: 0, y: 40 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -93,7 +84,7 @@ const ShoeListSection: React.FC = () => {
                   transition={{ duration: 0.5, delay: idx * 0.08 }}
                   whileHover={{ scale: 1.06 }}
                 >
-                  <ShoeLineCard line={line.line} image={line.image} />
+                  <ShoeLineCard shoeLine={line} />
                 </motion.div>
               ))}
             </div>
@@ -162,7 +153,7 @@ const ShoeListSection: React.FC = () => {
                 whileHover={{ scale: 1.04 }}
                 className="flex-shrink-0"
               >
-                <ShoeCard shoe={{ ...shoe, id: shoe.id.toString() }} />
+                <ShoeCard shoe={shoe} />
               </motion.div>
             ))}
           </div>
