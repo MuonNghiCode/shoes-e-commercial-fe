@@ -61,7 +61,6 @@ const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
   if (isAdminLayout) {
     return (
       <header className="flex justify-between items-center px-8 py-3 w-full sneako-header-modern">
