@@ -26,14 +26,7 @@
     /* Alias config */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@components/*": ["src/components/*"],
-      "@hooks/*": ["src/hooks/*"],
-      "@utils/*": ["src/utils/*"],
-      "@assets/*": ["src/assets/*"],
-      "@styles/*": ["src/styles/*"],
-      "@context/*": ["src/context/*"],
-      "@pages/*": ["src/pages/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src"]
