@@ -1,78 +1,178 @@
 import { useParams } from "react-router-dom";
-import { shoes } from "../../mocks/shoes";
+import { shoes } from "@/mocks/shoes";
+import React, { useState } from "react";
+import { Particles } from "@/components";
 
-const ProductDetail = () => {
+const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const shoeId = Number(id);
   const shoe = shoes.find((s) => s.id === shoeId);
 
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
   if (!shoe) {
-    return <div>Không tìm thấy sản phẩm.</div>;
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center text-2xl font-bold text-[color:var(--sneako-gold,#e6c066)]">
+        Không tìm thấy sản phẩm.
+      </div>
+    );
   }
 
   return (
-    <div
-      style={{
-        maxWidth: 800,
-        margin: "40px auto",
-        background: "#fff",
-        borderRadius: 18,
-        boxShadow: "0 8px 24px 0 rgba(191,160,70,0.10)",
-        padding: 32,
-      }}
-    >
-      <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
-        <img
-          src={shoe.image}
-          alt={shoe.name}
-          style={{
-            width: 320,
-            height: 260,
-            objectFit: "contain",
-            borderRadius: 12,
-            background: "#faf9f6",
-            boxShadow: "0 2px 8px #e5d7b633",
-          }}
-        />
-        <div style={{ flex: 1 }}>
-          <h1
-            style={{
-              fontSize: 32,
-              fontWeight: 800,
-              color: "#bfa046",
-              marginBottom: 12,
-            }}
-          >
-            {shoe.name}
-          </h1>
-          <div
-            style={{
-              color: "#bfa046",
-              fontWeight: 700,
-              fontSize: 26,
-              marginBottom: 18,
-            }}
-          >
-            {shoe.price.toLocaleString()}đ
+    <section className="min-h-screen w-full px-2 md:px-0 py-10 flex flex-col items-center bg-gradient-to-br from-[color:var(--sneako-beige,#f5f5dc)] via-white to-[color:var(--sneako-gold,#e6c066)] relative overflow-hidden">
+      {/* Glassmorphism background overlay */}
+      <Particles />
+      <div className="relative w-full max-w-6xl mx-auto z-10 flex flex-col gap-10">
+        {/* Top info */}
+        <div className="flex flex-col md:flex-row gap-10 md:gap-20 items-center w-full">
+          {/* Ảnh sản phẩm lớn nổi bật */}
+          <div className="flex-shrink-0 w-full max-w-[520px] aspect-[4/3] rounded-[2.5rem] overflow-hidden bg-[color:var(--sneako-beige,#f5f5dc)] shadow-2xl flex items-center justify-center border-4 border-[color:var(--sneako-gold,#e6c066)]/70 relative">
+            <img
+              src={shoe.images[0]}
+              alt={shoe.name}
+              className="w-full h-full object-cover object-center select-none drop-shadow-2xl scale-105 transition-transform duration-300 hover:scale-110"
+              draggable={false}
+              style={{ maxHeight: "420px" }}
+            />
+            {/* Hiệu ứng ánh sáng */}
+            <div className="absolute inset-0 pointer-events-none rounded-[2.5rem] bg-gradient-to-t from-white/30 via-transparent to-white/10" />
           </div>
-          <button
-            style={{
-              background: "#bfa046",
-              color: "#fff",
-              fontWeight: 700,
-              fontSize: 20,
-              border: "none",
-              borderRadius: 8,
-              padding: "12px 32px",
-              cursor: "pointer",
-              marginTop: 16,
-            }}
-          >
-            Mua ngay
-          </button>
+          {/* Thông tin sản phẩm */}
+          <div className="flex-1 flex flex-col gap-5 items-start justify-center px-2 md:px-0">
+            <span className="inline-block bg-white/90 text-[color:var(--sneako-dark)] text-xs font-bold px-4 py-1 rounded-full border border-[color:var(--sneako-gold)] tracking-wider uppercase shadow w-fit">
+              {shoe.brand}
+            </span>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-[color:var(--sneako-gold,#e6c066)] mb-3 tracking-tight drop-shadow-lg leading-tight">
+              {shoe.name}
+            </h1>
+            <div className="flex flex-wrap gap-2 items-center mb-2">
+              <span className="text-sm text-gray-700/80 bg-white/60 px-2 py-1 rounded border border-[color:var(--sneako-gold)]/30">
+                Loại: {shoe.category}
+              </span>
+              <span className="text-sm text-gray-700/80 bg-white/60 px-2 py-1 rounded border border-[color:var(--sneako-gold)]/30">
+                Còn lại: {shoe.stock}
+              </span>
+              {typeof shoe.averageRating === "number" && (
+                <span className="flex items-center gap-1 text-yellow-600 font-semibold text-sm bg-white/60 px-2 py-1 rounded border border-[color:var(--sneako-gold)]/30">
+                  <svg
+                    width="18"
+                    height="18"
+                    fill="#FFD700"
+                    viewBox="0 0 24 24"
+                    className="inline-block drop-shadow"
+                  >
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                  </svg>
+                  {shoe.averageRating?.toFixed(1)}
+                  <span className="text-gray-500 text-xs">
+                    ({shoe.numOfReviews || 0} đánh giá)
+                  </span>
+                </span>
+              )}
+            </div>
+            <div className="text-base md:text-lg text-gray-700/90 mb-2 max-w-2xl">
+              {shoe.description}
+            </div>
+            <div className="flex items-center gap-4 mb-2">
+              <span className="text-3xl md:text-4xl font-bold text-[color:var(--sneako-gold,#e6c066)] tracking-wider drop-shadow-xl">
+                {shoe.price.toLocaleString()}₫
+              </span>
+            </div>
+            {/* Size chọn mua */}
+            <div className="mb-4">
+              <div className="font-semibold text-[color:var(--sneako-brown,#3d2c18)] mb-1">
+                Chọn size:
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {shoe.sizes.map((sz) => (
+                  <label
+                    key={sz}
+                    className={`px-3 py-1 rounded-lg border-2 cursor-pointer font-medium transition-colors duration-150 text-sm select-none bg-white/60 border-[color:var(--sneako-gold,#e6c066)]/40 ${
+                      selectedSize === sz
+                        ? "bg-[color:var(--sneako-gold,#e6c066)]/20 border-[color:var(--sneako-gold,#e6c066)] text-[color:var(--sneako-gold,#e6c066)]"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedSize === sz}
+                      onChange={() =>
+                        setSelectedSize(selectedSize === sz ? null : sz)
+                      }
+                      className="hidden"
+                    />
+                    {sz}
+                  </label>
+                ))}
+              </div>
+            </div>
+            {/* Nút mua */}
+            <button
+              className="w-full md:w-fit flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-[color:var(--sneako-gold)] text-[color:var(--sneako-dark)] font-extrabold text-lg border-2 border-[color:var(--sneako-gold)] shadow-md hover:bg-yellow-300 hover:text-black transition-all duration-200 tracking-wide hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[color:var(--sneako-gold)] disabled:opacity-60"
+              disabled={!selectedSize}
+            >
+              <svg
+                width="22"
+                height="22"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="inline-block"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m13-9l2 9m-5-9V6a2 2 0 10-4 0v3"
+                />
+              </svg>
+              {selectedSize
+                ? `Mua ngay (Size ${selectedSize})`
+                : "Chọn size để mua"}
+            </button>
+          </div>
+        </div>
+        {/* Đánh giá & Review */}
+        <div className="w-full mt-8 flex flex-col gap-6">
+          <h2 className="text-2xl font-bold text-[color:var(--sneako-brown,#3d2c18)] mb-2 tracking-wide drop-shadow">
+            Đánh giá & Review
+          </h2>
+          {typeof shoe.averageRating === "number" && (
+            <div className="flex items-center gap-2 text-lg font-semibold text-yellow-700">
+              <svg
+                width="22"
+                height="22"
+                fill="#FFD700"
+                viewBox="0 0 24 24"
+                className="inline-block drop-shadow"
+              >
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+              </svg>
+              {shoe.averageRating?.toFixed(1)} trên 5
+              <span className="text-gray-500 text-base">
+                ({shoe.numOfReviews || 0} đánh giá)
+              </span>
+            </div>
+          )}
+          <div className="flex flex-col gap-3 mt-2">
+            {shoe.review && shoe.review.length > 0 ? (
+              shoe.review.map((rv, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white/70 rounded-xl px-5 py-3 border border-[color:var(--sneako-gold,#e6c066)]/30 text-gray-800 shadow-sm"
+                >
+                  <span className="block text-base">{rv}</span>
+                </div>
+              ))
+            ) : (
+              <div className="text-gray-500 italic">
+                Chưa có review nào cho sản phẩm này.
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
