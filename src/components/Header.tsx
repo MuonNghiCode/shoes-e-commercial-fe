@@ -2,8 +2,14 @@ import React, { useRef, useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "react-router-dom";
 import UserDropdown from "./UserDropdown";
-import { FaUserCircle, FaBars } from "react-icons/fa";
+import { FaUserCircle, FaBars, FaShoppingCart } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
+import CartDrawer from "@/components/CartDrawer";
+import {
+  Drawer,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+
 
 const NAV_LINKS = [
   { label: "Home", to: "/" },
@@ -11,6 +17,7 @@ const NAV_LINKS = [
   { label: "Collections", to: "/collections" },
   { label: "About", to: "/about" },
   { label: "Contact", to: "/contact" },
+  // Cart sẽ được render riêng bằng icon
 ];
 
 interface HeaderProps {
@@ -26,6 +33,7 @@ const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
   const profileBtnRef = useRef<HTMLButtonElement>(null);
   const profileBtnMobileRef = useRef<HTMLButtonElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -140,7 +148,6 @@ const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
               >
                 {link.label}
               </span>
-              {/* Underline chỉ hiển thị trên mobile */}
               <span
                 className={`absolute left-0 right-0 -bottom-1 h-[3px] rounded-full transition-all duration-300 md:hidden
                   ${
@@ -156,6 +163,20 @@ const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
         </nav>
         {/* CTA Button & User icon desktop */}
         <div className="hidden md:flex items-center gap-4">
+          {/* Cart icon (Drawer trigger) */}
+          <Drawer open={cartOpen} onOpenChange={setCartOpen}>
+            <DrawerTrigger asChild>
+              <button
+                className="flex items-center justify-center w-11 h-11 rounded-full bg-[#F5F5F3] border border-[#C9B37C] shadow hover:scale-105 focus:outline-none mr-2"
+                aria-label="Giỏ hàng"
+                type="button"
+              >
+                <FaShoppingCart size={26} color={location.pathname === "/cart" ? "#C9B37C" : "#2D1A10"} />
+              </button>
+            </DrawerTrigger>
+            <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
+          </Drawer>
+          {/* User icon */}
           {!isAuthenticated && (
             <a href="/login" className="sneako-cta">
               Shop Now
@@ -253,6 +274,7 @@ const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
                     />
                   </a>
                 ))}
+
                 {!isAuthenticated && (
                   <a
                     href="/login"
