@@ -7,7 +7,6 @@ const uniqueBrands = Array.from(new Set(shoesData.map((s) => s.brand)));
 const uniqueCategories = Array.from(new Set(shoesData.map((s) => s.category)));
 const uniqueSizes = Array.from(new Set(shoesData.flatMap((s) => s.sizes)));
 
-
 const ProductList: React.FC = () => {
   const [search, setSearch] = useState("");
   const [brands, setBrands] = useState<string[]>([]);
@@ -42,7 +41,10 @@ const ProductList: React.FC = () => {
   });
 
   const totalPages = Math.ceil(filteredShoes.length / pageSize);
-  const pagedShoes = filteredShoes.slice((page - 1) * pageSize, page * pageSize);
+  const pagedShoes = filteredShoes.slice(
+    (page - 1) * pageSize,
+    page * pageSize
+  );
 
   return (
     <section className="min-h-screen w-full px-2 md:px-6 py-10 flex justify-center items-start bg-gradient-to-br from-[color:var(--sneako-beige,#f5f5dc)] via-white to-[color:var(--sneako-gold,#e6c066)] relative overflow-hidden">
@@ -283,19 +285,21 @@ const ProductList: React.FC = () => {
                   >
                     &lt;
                   </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                    <button
-                      key={p}
-                      className={`px-3 py-1 rounded-lg border-2 font-bold transition-all duration-150 mx-1 ${
-                        page === p
-                          ? 'bg-[color:var(--sneako-gold,#e6c066)] text-white border-[color:var(--sneako-gold,#e6c066)] scale-110 shadow-lg'
-                          : 'bg-white/60 text-[color:var(--sneako-gold,#e6c066)] border-[color:var(--sneako-gold,#e6c066)]/40 hover:bg-yellow-100'
-                      }`}
-                      onClick={() => setPage(p)}
-                    >
-                      {p}
-                    </button>
-                  ))}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (p) => (
+                      <button
+                        key={p}
+                        className={`px-3 py-1 rounded-lg border-2 font-bold transition-all duration-150 mx-1 ${
+                          page === p
+                            ? "bg-[color:var(--sneako-gold,#e6c066)] text-white border-[color:var(--sneako-gold,#e6c066)] scale-110 shadow-lg"
+                            : "bg-white/60 text-[color:var(--sneako-gold,#e6c066)] border-[color:var(--sneako-gold,#e6c066)]/40 hover:bg-yellow-100"
+                        }`}
+                        onClick={() => setPage(p)}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
                   <button
                     className="px-3 py-1 rounded-lg border-2 border-[color:var(--sneako-gold,#e6c066)] bg-white/60 text-[color:var(--sneako-gold,#e6c066)] font-bold disabled:opacity-40 transition"
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}

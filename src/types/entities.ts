@@ -4,8 +4,6 @@ export interface Account {
     email: string;
     password: string;
     isAdmin: boolean;
-    createdAt?: string;
-    updatedAt?: string;
   }
 
   

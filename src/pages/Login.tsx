@@ -97,8 +97,7 @@ const Login: React.FC = () => {
       >
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-[98vw] xs:max-w-[380px] sm:max-w-[420px] md:max-w-[480px] lg:max-w-[520px] flex flex-col justify-center items-center gap-7 xs:gap-8 sm:gap-10 px-2 xs:px-3 sm:px-5 md:px-8 py-5 xs:py-7 sm:py-9 md:py-12 bg-white/90 md:bg-white/70 rounded-2xl shadow-2xl border border-[color:var(--sneako-gold,#e6c066)]/30 backdrop-blur-[8px] transition-all duration-300"
-          style={{ boxSizing: "border-box" }}
+          className="w-full max-w-[520px] flex flex-col justify-center items-center gap-10 px-8 py-12"
         >
           <motion.div
             className="w-full flex justify-start mb-2"
@@ -136,7 +135,7 @@ const Login: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
           />
           <motion.h2
-            className="text-3xl sm:text-4xl md:text-5xl font-black text-[color:var(--sneako-gold)] tracking-widest mb-2 uppercase text-center"
+            className="text-5xl font-black text-[color:var(--sneako-gold)] tracking-widest mb-2 uppercase"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.35 }}
@@ -144,7 +143,7 @@ const Login: React.FC = () => {
             Đăng nhập
           </motion.h2>
           <motion.div
-            className="text-base sm:text-lg text-[color:var(--sneako-dark)] font-medium mb-4 text-center w-full max-w-[340px]"
+            className="text-lg text-[color:var(--sneako-dark)] font-medium mb-4 text-center w-full max-w-[340px]"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5 }}
@@ -152,7 +151,7 @@ const Login: React.FC = () => {
             Đăng nhập để trải nghiệm thế giới sneaker luxury.
           </motion.div>
           <motion.div
-            className="w-full flex flex-col gap-6 sm:gap-8"
+            className="w-full flex flex-col gap-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.7 }}
@@ -164,7 +163,7 @@ const Login: React.FC = () => {
                 id="login-username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className={`peer w-full px-5 sm:px-7 py-4 sm:py-5 border-2 border-[color:var(--sneako-gold)]/70 rounded-2xl focus:outline-none bg-white/80 text-[color:var(--sneako-dark)] text-base sm:text-lg shadow-lg transition placeholder-transparent font-semibold`}
+                className={`peer w-full px-7 py-5 border-2 border-[color:var(--sneako-gold)]/70 rounded-2xl focus:outline-none bg-white/80 text-[color:var(--sneako-dark)] text-lg shadow-lg transition placeholder-transparent font-semibold`}
                 placeholder="Tên đăng nhập"
                 required
                 autoFocus
@@ -189,7 +188,7 @@ const Login: React.FC = () => {
                 id="login-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`peer w-full px-5 sm:px-7 py-4 sm:py-5 border-2 border-[color:var(--sneako-gold)]/70 rounded-2xl focus:outline-none bg-white/80 text-[color:var(--sneako-dark)] text-base sm:text-lg shadow-lg transition placeholder-transparent font-semibold pr-12 sm:pr-14`}
+                className={`peer w-full px-7 py-5 border-2 border-[color:var(--sneako-gold)]/70 rounded-2xl focus:outline-none bg-white/80 text-[color:var(--sneako-dark)] text-lg shadow-lg transition placeholder-transparent font-semibold pr-14`}
                 placeholder="Mật khẩu"
                 required
               />
@@ -231,7 +230,7 @@ const Login: React.FC = () => {
           </motion.div>
           <motion.button
             type="submit"
-            className="w-full py-4 sm:py-5 rounded-2xl bg-[color:var(--sneako-gold)] text-white font-bold text-lg sm:text-xl shadow-xl hover:bg-[color:var(--sneako-dark)] hover:text-[color:var(--sneako-gold)] hover:scale-[1.04] hover:shadow-[0_4px_24px_rgba(218,165,32,0.18)] transition-all duration-200 disabled:opacity-60"
+            className="w-full py-5 rounded-2xl bg-[color:var(--sneako-gold)] text-white font-bold text-xl shadow-xl hover:bg-[color:var(--sneako-dark)] hover:text-[color:var(--sneako-gold)] hover:scale-[1.04] hover:shadow-[0_4px_24px_rgba(218,165,32,0.18)] transition-all duration-200 disabled:opacity-60"
             disabled={isLoading}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
