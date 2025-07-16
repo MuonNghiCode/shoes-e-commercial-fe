@@ -1,3 +1,5 @@
+import React from "react";
+
 const orders = [
   {
     id: 1,

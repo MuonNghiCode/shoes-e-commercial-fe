@@ -8,14 +8,13 @@ import {
   MyOrders,
   Cart,
   ProductList,
+  ProductDetail,
 } from "@/pages";
 import AdminDashboard from "@/pages/Admin/AdminDashboard";
 import UserManagement from "@/pages/Admin/UserManagement";
 import ProductManagement from "@/pages/Admin/ProductManagement";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import { createBrowserRouter } from "react-router-dom";
-
-import Checkout from "@/pages/Checkout";
 
 const router = createBrowserRouter([
   {
@@ -51,18 +50,13 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-
-      {
-        path: "checkout",
-        element: (
-          <ProtectedRoute>
-            <Checkout />
-          </ProtectedRoute>
-        ),
-      },
       {
         path: "product",
         element: <ProductList />,
+      },
+      {
+        path: "product/:id",
+        element: <ProductDetail />,
       },
     ],
   },
