@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Drawer,
   DrawerContent,
@@ -7,22 +7,15 @@ import {
   DrawerFooter,
   DrawerClose,
 } from "@/components/ui/drawer";
-import { shoes } from "@/mocks/shoes";
+import { useCart } from "@/contexts/CartContext";
 
-const initialCart = [
-  { ...shoes[0], quantity: 2 },
-  { ...shoes[1], quantity: 2 },
-  { ...shoes[2], quantity: 1 },
-  { ...shoes[3], quantity: 1 },
-  { ...shoes[4], quantity: 1 },
-];
-
-type CartItem = typeof initialCart[number];
 
 const CartDrawer: React.FC<{ open: boolean; onOpenChange: (open: boolean) => void }> = ({ open, onOpenChange }) => {
-  const [cart, setCart] = useState<CartItem[]>(initialCart);
-  const handleRemove = (id: number) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
+  const { cart, removeFromCart } = useCart();
+  const handleRemove = (id: number, size: string) => {
+    // Xóa theo id và size, ở đây chỉ xóa theo id đầu tiên tìm thấy (giả sử size đầu tiên)
+    const item = cart.find((item) => item.id === id);
+    if (item) removeFromCart(id, item.size);
   };
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -43,10 +36,10 @@ const CartDrawer: React.FC<{ open: boolean; onOpenChange: (open: boolean) => voi
           ) : (
             <ul className="flex flex-col gap-6">
               {cart.map((item) => (
-                <li key={item.id} className="flex items-center gap-4">
+                <li key={item.id + item.size} className="flex items-center gap-4">
                   <img src={item.images[0]} alt={item.name} className="w-16 h-16 object-contain rounded bg-gray-100 border" />
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-base truncate">{item.name}</div>
+                    <div className="font-medium text-base truncate">{item.name} <span className="ml-2 text-xs text-gray-500">(Size {item.size})</span></div>
                     <div className="text-sm text-gray-500 mt-1">
                       <span className="font-semibold text-black">{item.quantity}</span>
                       <span className="mx-1">×</span>
@@ -54,7 +47,7 @@ const CartDrawer: React.FC<{ open: boolean; onOpenChange: (open: boolean) => voi
                     </div>
                   </div>
                   <button
-                    onClick={() => handleRemove(item.id)}
+                    onClick={() => handleRemove(item.id, item.size)}
                     className="text-gray-400 hover:text-red-500 transition-colors text-lg px-2"
                     title="Xóa"
                   >

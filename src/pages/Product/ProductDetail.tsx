@@ -2,6 +2,9 @@ import { useParams } from "react-router-dom";
 import { shoes } from "@/mocks/shoes";
 import React, { useState } from "react";
 import { Particles } from "@/components";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -9,6 +12,7 @@ const ProductDetail: React.FC = () => {
   const shoe = shoes.find((s) => s.id === shoeId);
 
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const { addToCart } = useCart();
 
   if (!shoe) {
     return (
@@ -106,6 +110,40 @@ const ProductDetail: React.FC = () => {
                 ))}
               </div>
             </div>
+            {/* Nút bỏ vào giỏ hàng */}
+            <button
+              className="w-full md:w-fit flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-white text-[color:var(--sneako-gold)] font-extrabold text-lg border-2 border-[color:var(--sneako-gold)] shadow-md hover:bg-yellow-100 hover:text-[color:var(--sneako-gold)] transition-all duration-200 tracking-wide hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[color:var(--sneako-gold)] disabled:opacity-60 mb-3"
+              disabled={!selectedSize}
+              onClick={() => {
+                if (selectedSize && shoe) {
+                  addToCart({
+                    id: shoe.id,
+                    name: shoe.name,
+                    price: shoe.price,
+                    images: shoe.images,
+                    size: selectedSize,
+                  });
+                  toast.success(`Đã thêm ${shoe.name} (Size ${selectedSize}) vào giỏ hàng!`);
+                }
+              }}
+            >
+              <svg
+                width="22"
+                height="22"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="inline-block"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m13-9l2 9m-5-9V6a2 2 0 10-4 0v3"
+                />
+              </svg>
+              {selectedSize ? `Bỏ vào giỏ hàng (Size ${selectedSize})` : "Chọn size để thêm"}
+            </button>
             {/* Nút mua */}
             <button
               className="w-full md:w-fit flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-[color:var(--sneako-gold)] text-[color:var(--sneako-dark)] font-extrabold text-lg border-2 border-[color:var(--sneako-gold)] shadow-md hover:bg-yellow-300 hover:text-black transition-all duration-200 tracking-wide hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[color:var(--sneako-gold)] disabled:opacity-60"

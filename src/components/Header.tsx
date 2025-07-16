@@ -13,7 +13,7 @@ import {
 
 const NAV_LINKS = [
   { label: "Home", to: "/" },
-  { label: "Shop", to: "/shop" },
+  { label: "Shop", to: "/product" },
   { label: "Collections", to: "/collections" },
   { label: "About", to: "/about" },
   { label: "Contact", to: "/contact" },
