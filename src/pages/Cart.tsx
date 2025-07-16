@@ -160,7 +160,7 @@ const Cart: React.FC = () => {
                   onChange={() => setShipping("pickup")}
                   className="mr-2"
                 />
-                Nhận tại cửa hàng: 15.000đ
+                Nhận tại cửa hàng
               </label>
             </div>
             <div className="text-gray-400 text-xs mt-2">
@@ -180,6 +180,10 @@ const Cart: React.FC = () => {
             whileHover={{ scale: 1.04 }}
             className="w-full bg-[color:var(--sneako-gold)] text-black text-lg rounded-lg hover:bg-yellow-400 py-3 cursor-pointer font-bold"
             disabled={cart.length === 0}
+            onClick={() => {
+              localStorage.setItem("cart", JSON.stringify(cart));
+              window.location.href = "/checkout";
+            }}
           >
             Tiến hành thanh toán
           </motion.button>
