@@ -8,8 +8,9 @@ import ProtectedRoute from "@/routes/ProtectedRoute";
 import { createBrowserRouter } from "react-router-dom";
 import MyOrders from "@/pages/Order/MyOrders";
 import ProductList from "@/pages/Product/ProductList";
-import ProductDetail from "@/pages/Product/ProductDetail";
+
 import Cart from "@/pages/Cart";
+import Checkout from "@/pages/Checkout";
 
 const router = createBrowserRouter([
   {
@@ -46,12 +47,16 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "user-productList",
-        element: <ProductList />,
+        path: "checkout",
+        element: (
+          <ProtectedRoute>
+            <Checkout />
+          </ProtectedRoute>
+        ),
       },
       {
-        path: "product/:id",
-        element: <ProductDetail />,
+        path: "user-productList",
+        element: <ProductList />,
       },
     ],
   },
