@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
-
 import { Header, Sidebar } from "@/components";
 
 const AdminLayout = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile mặc định đóng
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Desktop mặc định mở
 
   useEffect(() => {
     const handleResize = () => {
-      // Desktop thì luôn mở sidebar
-      if (window.innerWidth >= 768) {
+      // Mobile thì đóng sidebar
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false);
+      } else {
         setSidebarOpen(true);
       }
     };

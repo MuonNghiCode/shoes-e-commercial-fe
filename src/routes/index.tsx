@@ -1,15 +1,20 @@
 import { Layout, AuthLayout, AdminLayout } from "@/layouts";
-import { Home, Login, Register, ErrorPage, UserProfile } from "@/pages";
+import {
+  Home,
+  Login,
+  Register,
+  ErrorPage,
+  UserProfile,
+  MyOrders,
+  Cart,
+  ProductList,
+} from "@/pages";
 import AdminDashboard from "@/pages/Admin/AdminDashboard";
 import UserManagement from "@/pages/Admin/UserManagement";
 import ProductManagement from "@/pages/Admin/ProductManagement";
-
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import { createBrowserRouter } from "react-router-dom";
-import MyOrders from "@/pages/Order/MyOrders";
-import ProductList from "@/pages/Product/ProductList";
 
-import Cart from "@/pages/Cart";
 import Checkout from "@/pages/Checkout";
 
 const router = createBrowserRouter([
@@ -55,7 +60,15 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "user-productList",
+        path: "checkout",
+        element: (
+          <ProtectedRoute>
+            <Checkout />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "product",
         element: <ProductList />,
       },
     ],

@@ -7,7 +7,7 @@ import {
   FaChartBar,
   FaCog,
   FaBars,
-  FaTimes,
+  FaArrowLeft,
 } from "react-icons/fa";
 
 const adminLinks = [
@@ -46,7 +46,6 @@ interface SidebarProps {
 
 const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
   const location = useLocation();
-  const [isHovered, setIsHovered] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
   useEffect(() => {
@@ -58,28 +57,22 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Desktop: sử dụng hover, Mobile: sử dụng isOpen prop
-  const shouldExpand = isDesktop ? isHovered : isOpen;
+  // Sử dụng isOpen prop để điều khiển việc mở rộng sidebar
+  const shouldExpand = isOpen;
 
   return (
     <>
-      {/* Mobile Toggle Button */}
-      <button
-        onClick={onToggle}
-        className="md:hidden fixed top-4 left-4 z-50 p-3 rounded-xl shadow-lg hover:scale-105 transition-all duration-200"
-        style={{
-          background: "var(--sneako-gold)",
-          color: "var(--sneako-dark)",
-        }}
-      >
-        {isOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
-      </button>
-
       {/* Mobile Overlay */}
       {isOpen && !isDesktop && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity duration-300"
+        <button
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity duration-300 cursor-default"
           onClick={onToggle}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              onToggle();
+            }
+          }}
+          aria-label="Close sidebar"
         />
       )}
 
@@ -100,11 +93,32 @@ const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
           borderRight: "2px solid var(--sneako-gold)",
           boxShadow: "2px 0 10px rgba(45, 26, 16, 0.1)",
         }}
-        onMouseEnter={() => isDesktop && setIsHovered(true)}
-        onMouseLeave={() => isDesktop && setIsHovered(false)}
       >
         {/* Navigation */}
         <nav className="pt-6 px-3 h-full overflow-y-auto">
+          {/* Toggle Button - hiển thị ở trên cùng của sidebar */}
+          <div className="mb-4 pb-4 border-b border-gray-300">
+            <button
+              onClick={onToggle}
+              className="w-full p-3 rounded-lg hover:bg-gray-200 transition-all duration-200 flex items-center justify-center"
+              style={{
+                background: shouldExpand ? "var(--sneako-gold)" : "transparent",
+                color: shouldExpand ? "white" : "var(--sneako-dark)",
+                border: `1px solid var(--sneako-gold)`,
+              }}
+              title={shouldExpand ? "Thu gọn sidebar" : "Mở rộng sidebar"}
+            >
+              {shouldExpand ? (
+                <>
+                  <FaArrowLeft size={16} className="mr-2" />
+                  <span className="text-sm font-medium">Thu gọn</span>
+                </>
+              ) : (
+                <FaBars size={16} />
+              )}
+            </button>
+          </div>
+
           <ul className="space-y-2">
             {adminLinks.map((link) => {
               const isActive = link.exact
