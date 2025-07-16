@@ -2,29 +2,33 @@ import React, { useEffect, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Particles } from "@/components";
 
 const Login: React.FC = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
+  const form = location.state?.form?.pathname || "/";
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const loggedInUser = await login(username, password);
-    if (loggedInUser) {
+    try {
+      const user = await login({ email, password });
       toast.success("Đăng nhập thành công!");
-      if (loggedInUser.role === "admin") {
+      if (user?.isAdmin) {
         navigate("/admin", { replace: true });
       } else {
-        navigate("/", { replace: true });
+        navigate(form, { replace: true });
       }
-    } else {
-      toast.error("Sai tên đăng nhập hoặc mật khẩu!");
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message || "Đăng nhập thất bại. Vui lòng thử lại."
+      );
     }
   };
 
@@ -156,29 +160,29 @@ const Login: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.7 }}
           >
-            {/* Floating label for username */}
+            {/* Floating label for email */}
             <div className="relative">
               <input
-                type="text"
-                id="login-username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email"
+                id="login-email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className={`peer w-full px-7 py-5 border-2 border-[color:var(--sneako-gold)]/70 rounded-2xl focus:outline-none bg-white/80 text-[color:var(--sneako-dark)] text-lg shadow-lg transition placeholder-transparent font-semibold`}
-                placeholder="Tên đăng nhập"
+                placeholder="Email"
                 required
                 autoFocus
               />
               <label
-                htmlFor="login-username"
+                htmlFor="login-email"
                 className={`absolute left-7 text-lg font-light text-[color:var(--sneako-beige)] pointer-events-none transition-all duration-200
                   ${
-                    username
+                    email
                       ? "-top-4 text-sm text-[color:var(--sneako-gold)]"
                       : "top-1/2 -translate-y-1/2"
                   }
                   peer-focus:-top-4 peer-focus:text-sm peer-focus:text-[color:var(--sneako-gold)]`}
               >
-                Tên đăng nhập
+                Email
               </label>
             </div>
             {/* Floating label for password */}
