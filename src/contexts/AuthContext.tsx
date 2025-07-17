@@ -49,12 +49,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         })
         .catch((error) => {
           if (error?.response?.status === 401) {
-            {
-              setUser(null);
-              localStorage.removeItem("token");
-            }
-            localStorage.removeItem("user");
             setUser(null);
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
           }
           // Nếu lỗi khác thì giữ user cũ
         })
