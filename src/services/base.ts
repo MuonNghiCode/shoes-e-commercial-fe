@@ -34,7 +34,7 @@ class BaseApiService {
       (error) => {
         // Don't redirect to login for public endpoints
         const isPublicEndpoint =
-          error.config?.url?.includes("/players/") &&
+          error.config?.url?.includes("/product/") &&
           error.config?.method === "get";
 
         if (error.response?.status === 401 && !isPublicEndpoint) {
