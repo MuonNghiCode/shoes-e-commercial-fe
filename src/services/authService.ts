@@ -3,6 +3,7 @@ import BaseApiService from "./base";
 import { API_ENDPOINTS } from "@/constants";
 
 class AuthService extends BaseApiService {
+    // Lấy profile user hiện tại
     async login(credentials: LoginRequest): Promise<LoginResponse> {
         const response = await this.api.post<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials);
         return response.data;
@@ -24,12 +25,18 @@ class AuthService extends BaseApiService {
         return this.post<LoginResponse>(API_ENDPOINTS.AUTH.REFRESH_TOKEN);
     }
 
-    async updateProfile(id: string, data: UpdateProfileRequest): Promise<ResponseModel<Account>> {
-        return this.put<Account>(API_ENDPOINTS.ACCOUNTS.BY_ID(id), data);
+    // Nếu có id thì update theo id (admin), nếu không có thì update profile của chính mình
+    async updateProfile(id: string | undefined, data: UpdateProfileRequest): Promise<ResponseModel<Account>> {
+        if (id) {
+            return this.put<Account>(API_ENDPOINTS.ACCOUNTS.BY_ID(id), data);
+        } else {
+            // update profile của chính mình
+            return this.put<Account>(API_ENDPOINTS.AUTH.PROFILE, data);
+        }
     }
 
-    async changePassword(id: string, data: ChangePasswordRequest): Promise<ResponseModel<void>> {
-        return this.put<void>(API_ENDPOINTS.ACCOUNTS.PASSWORD(id), data);
+    async changePassword(data: ChangePasswordRequest): Promise<ResponseModel<void>> {
+        return this.put<void>(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, data);
     }
 }
 
