@@ -1,53 +1,102 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/user/sideBar";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const initialUser = {
-  fullName: "Nguyễn Văn A",
-  username: "nguyenvana",
-  email: "nguyenvana@example.com",
-  phone: "0123456789",
-  address: "123 Đường ABC, Quận 1, TP.HCM",
-  gender: "Nam",
-  dob: "1995-01-01",
-};
+import { useAuth } from "@/contexts/AuthContext";
+// Đã chuyển toàn bộ logic cập nhật vào AuthContext, không dùng trực tiếp authService
 
 const UserProfile = () => {
-  const [user, setUser] = useState(initialUser);
+  const { user, isAuthenticated, updateProfile, changePassword } = useAuth();
   const [edit, setEdit] = useState(false);
-  const [form, setForm] = useState(user);
+  const [form, setForm] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+  });
+  useEffect(() => {
+    if (user) {
+      setForm({
+        name: user.name || "",
+        email: user.email || "",
+      });
+    }
+  }, [user]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setForm({
+      ...form,
+      [name]: type === "checkbox" ? checked : value,
+    });
   };
 
   const handleEdit = () => {
     setEdit(true);
-    setForm(user);
+    setForm({
+      name: user?.name || "",
+      email: user?.email || "",
+    });
   };
 
   const handleCancel = () => {
     setEdit(false);
-    setForm(user);
+    setForm({
+      name: user?.name || "",
+      email: user?.email || "",
+    });
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setUser(form);
-    setEdit(false);
-    toast.success("Cập nhật thông tin thành công!", {
-      position: "top-right",
-      autoClose: 2000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-    });
+    try {
+      const updateData: any = { name: form.name, email: form.email };
+      await updateProfile(updateData); // Sử dụng hàm từ context
+      toast.success("Cập nhật thông tin thành công!", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      setEdit(false);
+    } catch (err) {
+      toast.error("Cập nhật thất bại!");
+    }
+  };
+
+  // Đổi mật khẩu
+  const [showChangePw, setShowChangePw] = useState(false);
+  const [pwForm, setPwForm] = useState({ old: "", new1: "", new2: "" });
+  const [pwLoading, setPwLoading] = useState(false);
+
+  const handleChangePw = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPwForm((f) => ({ ...f, [name]: value }));
+  };
+  const handleSubmitPw = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pwForm.old || !pwForm.new1 || !pwForm.new2) {
+      toast.error("Vui lòng nhập đầy đủ thông tin.");
+      return;
+    }
+    if (pwForm.new1 !== pwForm.new2) {
+      toast.error("Mật khẩu mới không khớp.");
+      return;
+    }
+    setPwLoading(true);
+    changePassword(pwForm.old, pwForm.new1)
+      .then(() => {
+        setPwLoading(false);
+        setShowChangePw(false);
+        setPwForm({ old: "", new1: "", new2: "" });
+        toast.success("Đổi mật khẩu thành công!");
+      })
+      .catch((err: any) => {
+        setPwLoading(false);
+        toast.error(err.message || "Đổi mật khẩu thất bại!");
+      });
   };
 
   return (
@@ -60,14 +109,23 @@ const UserProfile = () => {
         <div className="md:w-3/4 w-full bg-[#FFF8ED] rounded-2xl shadow p-6 border border-[#E6D4B6]">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-[#2D1A10]">Tài khoản</h2>
-            {!edit && (
+            <div className="flex gap-2">
+              {!edit && (
+                <button
+                  onClick={handleEdit}
+                  className="bg-[#2D1A10] hover:bg-[#C9B37C] text-white px-5 py-2 rounded-lg font-semibold shadow transition-colors"
+                >
+                  Chỉnh sửa
+                </button>
+              )}
               <button
-                onClick={handleEdit}
-                className="bg-[#2D1A10] hover:bg-[#C9B37C] text-white px-5 py-2 rounded-lg font-semibold shadow transition-colors"
+                type="button"
+                onClick={() => setShowChangePw(true)}
+                className="bg-[#E6D4B6] hover:bg-[#C9B37C] text-[#2D1A10] px-5 py-2 rounded-lg font-semibold shadow transition-colors"
               >
-                Chỉnh sửa
+                Đổi mật khẩu
               </button>
-            )}
+            </div>
           </div>
           <form
             onSubmit={handleSave}
@@ -78,23 +136,11 @@ const UserProfile = () => {
                 Họ và tên
               </label>
               <input
-                name="fullName"
-                value={form.fullName}
+                name="name"
+                value={form.name}
                 onChange={handleChange}
                 disabled={!edit}
                 className="border border-[#E6D4B6] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9B37C] bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
-                Tên đăng nhập
-              </label>
-              <input
-                name="username"
-                value={form.username}
-                onChange={handleChange}
-                disabled
-                className="border border-[#E6D4B6] rounded-lg px-3 py-2 bg-[#F5E6C5] text-[#2D1A10]"
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -106,59 +152,6 @@ const UserProfile = () => {
                 type="email"
                 disabled={!edit}
                 className="border border-[#E6D4B6] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9B37C] bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
-                Số điện thoại
-              </label>
-              <input
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                disabled={!edit}
-                className="border border-[#E6D4B6] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9B37C] bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
-              />
-            </div>
-            <div className="flex flex-col gap-2 md:col-span-2">
-              <label className="text-sm font-medium text-gray-700">
-                Địa chỉ
-              </label>
-              <input
-                name="address"
-                value={form.address}
-                onChange={handleChange}
-                disabled={!edit}
-                className="border border-[#E6D4B6] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9B37C] bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
-                Giới tính
-              </label>
-              <select
-                name="gender"
-                value={form.gender}
-                onChange={handleChange}
-                disabled={!edit}
-                className="border border-[#E6D4B6] rounded-lg px-3 py-2 bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
-              >
-                <option value="Nam">Nam</option>
-                <option value="Nữ">Nữ</option>
-                <option value="Khác">Khác</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
-                Ngày sinh
-              </label>
-              <input
-                name="dob"
-                value={form.dob}
-                onChange={handleChange}
-                type="date"
-                disabled={!edit}
-                className="border border-[#E6D4B6] rounded-lg px-3 py-2 bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
               />
             </div>
             {edit && (
@@ -179,6 +172,92 @@ const UserProfile = () => {
               </div>
             )}
           </form>
+          {/* Overlay và popup đổi mật khẩu dạng popup */}
+          {showChangePw && (
+            <>
+              {/* Overlay mờ */}
+              <div className="fixed inset-0 z-40 bg-black/60 transition-opacity"></div>
+              {/* Popup ở giữa màn hình */}
+              <dialog
+                open
+                className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl border-none p-0 bg-transparent flex items-center justify-center"
+                onCancel={() => setShowChangePw(false)}
+                style={{
+                  padding: 0,
+                  border: "none",
+                  background: "transparent",
+                }}
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) setShowChangePw(false);
+                }}
+              >
+                <form
+                  onSubmit={handleSubmitPw}
+                  className="bg-[#FFF8ED] border border-[#E6D4B6] rounded-2xl shadow-lg p-8 min-w-[320px] max-w-[90vw]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <h2 className="text-xl font-bold text-[#2D1A10] mb-4">
+                    Đổi mật khẩu
+                  </h2>
+                  <div className="flex flex-col gap-4 mb-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Mật khẩu cũ
+                      </label>
+                      <input
+                        type="password"
+                        name="old"
+                        value={pwForm.old}
+                        onChange={handleChangePw}
+                        className="border border-[#E6D4B6] rounded-lg px-3 py-2 w-full bg-[#FFF8ED] text-[#2D1A10]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Mật khẩu mới
+                      </label>
+                      <input
+                        type="password"
+                        name="new1"
+                        value={pwForm.new1}
+                        onChange={handleChangePw}
+                        className="border border-[#E6D4B6] rounded-lg px-3 py-2 w-full bg-[#FFF8ED] text-[#2D1A10]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Xác nhận mật khẩu mới
+                      </label>
+                      <input
+                        type="password"
+                        name="new2"
+                        value={pwForm.new2}
+                        onChange={handleChangePw}
+                        className="border border-[#E6D4B6] rounded-lg px-3 py-2 w-full bg-[#FFF8ED] text-[#2D1A10]"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-4 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setShowChangePw(false)}
+                      className="bg-[#E6D4B6] hover:bg-[#C9B37C] text-[#2D1A10] px-6 py-2 rounded-lg font-semibold shadow transition-colors"
+                      disabled={pwLoading}
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      type="submit"
+                      className="bg-[#2D1A10] hover:bg-[#C9B37C] text-white px-6 py-2 rounded-lg font-semibold shadow transition-colors"
+                      disabled={pwLoading}
+                    >
+                      {pwLoading ? "Đang đổi..." : "Xác nhận"}
+                    </button>
+                  </div>
+                </form>
+              </dialog>
+            </>
+          )}
         </div>
       </div>
     </div>

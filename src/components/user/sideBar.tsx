@@ -1,11 +1,4 @@
-import {
-  FaTachometerAlt,
-  FaHistory,
-  FaHeart,
-  FaShoppingCart,
-  FaCog,
-  FaSignOutAlt,
-} from "react-icons/fa";
+import { FaHistory, FaShoppingCart, FaCog } from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
 
 const navItems = [
@@ -15,12 +8,7 @@ const navItems = [
     to: "/orders",
     disabled: false,
   },
-  {
-    label: "Wishlist",
-    icon: <FaHeart className="mr-3" />,
-    to: "/wishlist",
-    disabled: true,
-  },
+
   {
     label: "Shopping Cart",
     icon: <FaShoppingCart className="mr-3" />,

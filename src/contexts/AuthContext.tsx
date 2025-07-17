@@ -15,6 +15,13 @@ interface AuthContextType {
   login: (credentials: LoginRequest) => Promise<Account>;
   register: (crendentials: RegisterRequest) => Promise<void>;
   logout: () => void;
+  updateProfile: (
+    data: Partial<Account> & { password?: string }
+  ) => Promise<any>;
+  changePassword: (
+    currentPassword: string,
+    newPassword: string
+  ) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,12 +41,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       authService
         .getProfile()
         .then((response) => {
-          setUser(response.data.user);
+          {
+            // response.data.user là profile user
+            setUser({ ...response.data.user });
+          }
           localStorage.setItem("user", JSON.stringify(response.data.user));
         })
         .catch((error) => {
           if (error?.response?.status === 401) {
-            localStorage.removeItem("token");
+            {
+              setUser(null);
+              localStorage.removeItem("token");
+            }
             localStorage.removeItem("user");
             setUser(null);
           }
@@ -74,6 +87,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.removeItem("user");
   };
 
+  // Cập nhật thông tin cá nhân
+  const updateProfile = async (
+    data: Partial<Account> & { password?: string }
+  ) => {
+    const response = await authService.updateProfile(undefined, data);
+    // Sau khi cập nhật thành công, lấy lại profile mới nhất
+    const profileRes = await authService.getProfile();
+    setUser({ ...profileRes.data.user });
+    return response;
+  };
+
+  // Đổi mật khẩu
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ) => {
+    try {
+      const response = await authService.changePassword({
+        currentPassword,
+        newPassword,
+      });
+      return response;
+    } catch (err: any) {
+      throw new Error(err?.response?.data?.message || "Đổi mật khẩu thất bại");
+    }
+  };
+
+  // Cập nhật thông tin cá nhân
+  const updateProfile = async (
+    data: Partial<Account> & { password?: string }
+  ) => {
+    const response = await authService.updateProfile(undefined, data);
+    // Sau khi cập nhật thành công, lấy lại profile mới nhất
+    const profileRes = await authService.getProfile();
+    setUser({ ...profileRes.data.user });
+    return response;
+  };
+
+  // Đổi mật khẩu
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ) => {
+    try {
+      const response = await authService.changePassword({
+        currentPassword,
+        newPassword,
+      });
+      return response;
+    } catch (err: any) {
+      throw new Error(err?.response?.data?.message || "Đổi mật khẩu thất bại");
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -84,6 +151,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         register,
         login,
         logout,
+        updateProfile,
+        changePassword,
       }}
     >
       {children}
