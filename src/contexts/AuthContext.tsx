@@ -22,7 +22,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<Account | null>(null);
+  const [user, setUser] = useState<Account | null>(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -30,8 +33,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     if (token) {
       authService
         .getProfile()
-        .then((response) => setUser(response.data.user))
-        .catch(() => localStorage.removeItem("token"))
+        .then((response) => {
+          setUser(response.data.user);
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+        })
+        .catch((error) => {
+          if (error?.response?.status === 401) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            setUser(null);
+          }
+          // Nếu lỗi khác thì giữ user cũ
+        })
         .finally(() => setIsLoading(false));
     } else {
       setIsLoading(false);
@@ -42,6 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const response = await authService.login(credentials);
     if (response.account && response.token) {
       localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(response.account));
       setUser(response.account);
       return response.account;
     } else {
@@ -57,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = () => {
     setUser(null);
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
   };
 
   return (

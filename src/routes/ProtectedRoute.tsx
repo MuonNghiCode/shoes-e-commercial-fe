@@ -11,17 +11,19 @@ const ProtectedRoute = ({
   requireAdmin = false,
   children,
 }: ProtectedRouteProps) => {
-  const { isAuthenticated, isAdmin, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (!isAuthenticated) {
+  // Nếu chưa đăng nhập
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (requireAdmin && !isAdmin) {
+  // Nếu yêu cầu admin mà user không phải admin
+  if (requireAdmin && !user.isAdmin) {
     return <Navigate to="/" replace />;
   }
 
