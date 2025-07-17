@@ -1,56 +1,75 @@
-import { createContext, useContext, useState } from "react";
-import type { ReactNode } from "react";
-import { users } from "@/mocks/users";
+import React, { createContext, useContext, useEffect, useState } from "react";
+
+import {
+  authService,
+  type Account,
+  type LoginRequest,
+  type RegisterRequest,
+} from "@/services";
 
 interface AuthContextType {
   user: any;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<any>;
+  login: (credentials: LoginRequest) => Promise<Account>;
+  register: (crendentials: RegisterRequest) => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<any>(() => {
-    const stored = localStorage.getItem("user");
-    return stored ? JSON.parse(stored) : null;
-  });
-  const [isLoading, setIsLoading] = useState(false);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [user, setUser] = useState<Account | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const isAuthenticated = !!user;
-  const isAdmin = user?.role === "admin";
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      authService
+        .getProfile()
+        .then((response) => setUser(response.data.user))
+        .catch(() => localStorage.removeItem("token"))
+        .finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const login = async (username: string, password: string) => {
-    setIsLoading(true);
-    return new Promise<any>((resolve) => {
-      setTimeout(() => {
-        const foundUser = users.find(
-          (u) => u.username === username && u.password === password
-        );
-        if (foundUser) {
-          setUser(foundUser);
-          localStorage.setItem("user", JSON.stringify(foundUser));
-          setIsLoading(false);
-          resolve(foundUser);
-        } else {
-          setIsLoading(false);
-          resolve(null);
-        }
-      }, 500);
-    });
+  const login = async (credentials: LoginRequest): Promise<Account> => {
+    const response = await authService.login(credentials);
+    if (response.account && response.token) {
+      localStorage.setItem("token", response.token);
+      setUser(response.account);
+      return response.account;
+    } else {
+      throw new Error(response.message || "Đăng nhập thất bại");
+    }
+  };
+
+  const register = async (data: RegisterRequest) => {
+    await authService.register(data);
+    await login({ email: data.email, password: data.password });
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, isAdmin, isLoading, login, logout }}
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isAdmin: user?.isAdmin || false,
+        isLoading,
+        register,
+        login,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>

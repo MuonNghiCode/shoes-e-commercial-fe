@@ -2,7 +2,7 @@ export interface Account {
     _id: string;
     name: string;
     email: string;
-    password: string;
+    password?: string;
     isAdmin: boolean;
   }
 
@@ -58,7 +58,7 @@ export interface Account {
 
   export interface Review {
     _id: string;
-    account: Account; // ID của account
+    account: Account; 
     name: string;
     rating: number;
     comment: string;
