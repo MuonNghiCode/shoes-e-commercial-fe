@@ -1,25 +1,45 @@
-import React, { useState } from "react";
-import { shoes as shoesData } from "@/mocks/shoes";
+import React, { useState, useEffect } from "react";
+import { productService } from "@/services";
 import ShoeCard from "@/components/products/ShoeCard";
 import { Particles } from "@/components";
 
-const uniqueBrands = Array.from(new Set(shoesData.map((s) => s.brand)));
-const uniqueCategories = Array.from(new Set(shoesData.map((s) => s.category)));
-const uniqueSizes = Array.from(new Set(shoesData.flatMap((s) => s.sizes)));
-
 const ProductList: React.FC = () => {
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [brands, setBrands] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const minPriceAll = Math.min(...shoesData.map((s) => s.price));
-  const maxPriceAll = Math.max(...shoesData.map((s) => s.price));
-  const [minPrice, setMinPrice] = useState(minPriceAll);
-  const [maxPrice, setMaxPrice] = useState(maxPriceAll);
   const [sizes, setSizes] = useState<(string | number)[]>([]);
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(0);
   const [page, setPage] = useState(1);
   const pageSize = 6;
 
-  const filteredShoes = shoesData.filter((shoe) => {
+  useEffect(() => {
+    setLoading(true);
+    productService
+      .getAllProducts()
+      .then((res: any) => {
+        const items: any[] = Array.isArray(res)
+          ? res
+          : Array.isArray(res.data)
+          ? res.data
+          : [];
+        setProducts(items);
+        if (items.length > 0) {
+          setMinPrice(Math.min(...items.map((s: any) => s.price)));
+          setMaxPrice(Math.max(...items.map((s: any) => s.price)));
+        }
+      })
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const uniqueBrands = Array.from(new Set(products.map((s) => s.brand)));
+  const uniqueCategories = Array.from(new Set(products.map((s) => s.category)));
+  const uniqueSizes = Array.from(new Set(products.flatMap((s) => s.sizes)));
+
+  const filteredProducts = products.filter((shoe) => {
     const matchesSearch = shoe.name
       .toLowerCase()
       .includes(search.toLowerCase());
@@ -27,7 +47,7 @@ const ProductList: React.FC = () => {
     const matchesCategory =
       categories.length === 0 || categories.includes(shoe.category);
     const matchesSize =
-      sizes.length === 0 || shoe.sizes.some((sz) => sizes.includes(sz));
+      sizes.length === 0 || shoe.sizes.some((sz: any) => sizes.includes(sz));
     const matchesMin = shoe.price >= minPrice;
     const matchesMax = shoe.price <= maxPrice;
     return (
@@ -40,11 +60,18 @@ const ProductList: React.FC = () => {
     );
   });
 
-  const totalPages = Math.ceil(filteredShoes.length / pageSize);
-  const pagedShoes = filteredShoes.slice(
-    (page - 1) * pageSize,
-    page * pageSize
-  );
+  const totalPages = Math.ceil(filteredProducts.length / pageSize);
+  const pagedProducts = filteredProducts
+    .slice((page - 1) * pageSize, page * pageSize)
+    .map((shoe) => ({
+      ...shoe,
+      id: shoe.id || shoe._id,
+      sizes: Array.isArray(shoe.sizes)
+        ? shoe.sizes
+        : typeof shoe.sizes === "string"
+        ? shoe.sizes.split(",")
+        : [shoe.sizes],
+    }));
 
   return (
     <section className="min-h-screen w-full px-2 md:px-6 py-10 flex justify-center items-start bg-gradient-to-br from-[color:var(--sneako-beige,#f5f5dc)] via-white to-[color:var(--sneako-gold,#e6c066)] relative overflow-hidden">
@@ -166,10 +193,10 @@ const ProductList: React.FC = () => {
                   placeholder="Giá từ"
                   className="w-1/2 max-w-[110px] px-3 py-2 rounded-lg border-2 border-[color:var(--sneako-gold,#e6c066)]/70 bg-white/20 focus:outline-none focus:ring-2 focus:ring-[color:var(--sneako-gold,#e6c066)]/40 shadow-sm backdrop-blur-[8px]"
                   value={minPrice}
-                  min={minPriceAll}
+                  min={minPrice}
                   max={maxPrice}
                   onChange={(e) => {
-                    const val = Math.max(Number(e.target.value), minPriceAll);
+                    const val = Math.max(Number(e.target.value), minPrice);
                     setMinPrice(val > maxPrice ? maxPrice : val);
                   }}
                 />
@@ -179,9 +206,9 @@ const ProductList: React.FC = () => {
                   className="w-1/2 max-w-[110px] px-3 py-2 rounded-lg border-2 border-[color:var(--sneako-gold,#e6c066)]/70 bg-white/20 focus:outline-none focus:ring-2 focus:ring-[color:var(--sneako-gold,#e6c066)]/40 shadow-sm backdrop-blur-[8px]"
                   value={maxPrice}
                   min={minPrice}
-                  max={maxPriceAll}
+                  max={maxPrice}
                   onChange={(e) => {
-                    const val = Math.min(Number(e.target.value), maxPriceAll);
+                    const val = Math.min(Number(e.target.value), maxPrice);
                     setMaxPrice(val < minPrice ? minPrice : val);
                   }}
                 />
@@ -189,8 +216,8 @@ const ProductList: React.FC = () => {
               {/* Double range slider for price */}
               <div className="flex flex-col gap-1 mt-2 w-full max-w-full">
                 <div className="flex justify-between text-xs text-gray-500 mb-1 w-full max-w-full">
-                  <span>{minPriceAll}₫</span>
-                  <span>{maxPriceAll}₫</span>
+                  <span>{minPrice}₫</span>
+                  <span>{maxPrice}₫</span>
                 </div>
                 <div
                   className="relative w-full max-w-full flex items-center"
@@ -198,7 +225,7 @@ const ProductList: React.FC = () => {
                 >
                   <input
                     type="range"
-                    min={minPriceAll}
+                    min={minPrice}
                     max={maxPrice - 1}
                     value={minPrice}
                     onChange={(e) => {
@@ -218,7 +245,7 @@ const ProductList: React.FC = () => {
                   <input
                     type="range"
                     min={minPrice + 1}
-                    max={maxPriceAll}
+                    max={maxPrice}
                     value={maxPrice}
                     onChange={(e) => {
                       const val = Math.max(
@@ -257,14 +284,14 @@ const ProductList: React.FC = () => {
           <h1 className="text-4xl font-extrabold text-[color:var(--sneako-gold,#e6c066)] mb-8 tracking-tight drop-shadow-lg">
             Tất cả sản phẩm
           </h1>
-          {filteredShoes.length === 0 ? (
+          {filteredProducts.length === 0 ? (
             <div className="text-lg text-gray-500 py-20 text-center">
               Không tìm thấy sản phẩm phù hợp.
             </div>
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-8 p-2 md:p-6 rounded-2xl bg-white/10 shadow-2xl backdrop-blur-[12px] border-2 border-[color:var(--sneako-gold,#e6c066)]/60">
-                {pagedShoes.map((shoe) => (
+                {pagedProducts.map((shoe) => (
                   <div
                     key={shoe.id}
                     className="cursor-pointer flex items-center justify-center "

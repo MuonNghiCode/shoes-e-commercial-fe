@@ -1,14 +1,16 @@
-import type { CreateProductRequest, CreateReviewRequest, ProductQueryParams, ProductResponse, ResponseModel, ReviewResponse, UpdateProductRequest } from "@/types";
+import type { CreateProductRequest, CreateReviewRequest, ProductQueryParams, ProductResponse, ProductsResponse, ResponseModel, ReviewResponse, UpdateProductRequest } from "@/types";
 import BaseApiService from "./base";
 import { API_ENDPOINTS } from "@/constants";
 
 class ProductService extends BaseApiService {
-    async getAllProducts(params?: ProductQueryParams): Promise<ProductResponse> {
-        return this.get<ProductResponse['data']>(API_ENDPOINTS.PRODUCTS.BASE, params);
+    async getAllProducts(params?: ProductQueryParams): Promise<any[]> {
+        const response = await this.api.get<any[]>(API_ENDPOINTS.PRODUCTS.BASE, { params });
+        return response.data;
     }
 
-    async getProductById(id: string): Promise<ProductResponse> {
-        return this.get<ProductResponse['data']>(API_ENDPOINTS.PRODUCTS.BY_ID(id));
+    async getProductById(id: string): Promise<any> {
+        const response = await this.api.get<any>(API_ENDPOINTS.PRODUCTS.BY_ID(id));
+        return response.data;
     }
 
     async createProduct(data: CreateProductRequest): Promise<ProductResponse> {
