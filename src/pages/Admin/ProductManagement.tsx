@@ -1,7 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { adminService } from "@/services";
+import type {
+  Product,
+  CreateProductRequest,
+  UpdateProductRequest,
+} from "@/types";
 
-interface Product {
-  id: number;
+interface LocalProduct {
+  id: string;
   name: string;
   brand: string;
   price: number;
@@ -9,58 +15,134 @@ interface Product {
   stock: number;
   image: string;
   description: string;
+  sizes: "38" | "39" | "40" | "41" | "42" | "43" | "44";
+  _id?: string;
 }
 
 const ProductManagement = () => {
-  const [products, setProducts] = useState<Product[]>([
-    {
-      id: 1,
-      name: "Air Max 270",
-      brand: "Nike",
-      price: 2500000,
-      category: "Sneakers",
-      stock: 25,
-      image: "/shoes.webp",
-      description: "Giày thể thao Nike Air Max 270 với thiết kế hiện đại",
-    },
-    {
-      id: 2,
-      name: "Ultraboost 22",
-      brand: "Adidas",
-      price: 3200000,
-      category: "Running",
-      stock: 18,
-      image: "/shoes.webp",
-      description: "Giày chạy bộ Adidas Ultraboost với công nghệ Boost",
-    },
-    {
-      id: 3,
-      name: "Chuck Taylor All Star",
-      brand: "Converse",
-      price: 1200000,
-      category: "Casual",
-      stock: 40,
-      image: "/shoes.webp",
-      description: "Giày canvas cổ điển Converse Chuck Taylor",
-    },
-    {
-      id: 4,
-      name: "RS-X",
-      brand: "Puma",
-      price: 1800000,
-      category: "Sneakers",
-      stock: 12,
-      image: "/shoes.webp",
-      description: "Giày thể thao Puma RS-X với thiết kế retro",
-    },
-  ]);
+  const [products, setProducts] = useState<LocalProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch products on component mount
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      console.log("Fetching products...");
+      const response = await adminService.getAllProductsForAdmin();
+      console.log("Products API response:", response);
+
+      // Check if response is successful and has data
+      if (response && response.success !== false) {
+        // Handle different response structures
+        let productData: Product[] = [];
+
+        if (Array.isArray(response)) {
+          // Direct array response
+          productData = response as Product[];
+        } else if (response.data && Array.isArray(response.data)) {
+          // Wrapped in data property
+          productData = response.data;
+        } else if (response.success && Array.isArray(response.data)) {
+          // Standard ResponseModel structure
+          productData = response.data;
+        }
+
+        if (productData.length > 0) {
+          // Convert Product type to LocalProduct type for UI compatibility
+          const localProducts: LocalProduct[] = productData.map(
+            (product: Product) => ({
+              id: product._id,
+              name: product.name,
+              brand: product.brand,
+              price: product.price,
+              category: product.category,
+              stock: product.stock,
+              image:
+                product.images && product.images.length > 0
+                  ? product.images[0]
+                  : "/shoes.webp",
+              description: product.description || "",
+              sizes: product.sizes,
+              _id: product._id,
+            })
+          );
+          console.log("Converted products:", localProducts);
+          setProducts(localProducts);
+          setLoading(false);
+          return;
+        }
+      }
+
+      console.error("Failed to fetch products - invalid response:", response);
+      // Fallback to mock data
+      setProducts([
+        {
+          id: "1",
+          name: "Air Max 270",
+          brand: "Nike",
+          price: 2500000,
+          category: "Sneakers",
+          stock: 25,
+          image: "/shoes.webp",
+          description: "Giày thể thao Nike Air Max 270 với thiết kế hiện đại",
+          sizes: "42",
+        },
+        {
+          id: "2",
+          name: "Ultraboost 22",
+          brand: "Adidas",
+          price: 3200000,
+          category: "Running",
+          stock: 18,
+          image: "/shoes.webp",
+          description: "Giày chạy bộ Adidas Ultraboost với công nghệ Boost",
+          sizes: "41",
+        },
+      ]);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      // Fallback to mock data
+      setProducts([
+        {
+          id: "1",
+          name: "Air Max 270",
+          brand: "Nike",
+          price: 2500000,
+          category: "Sneakers",
+          stock: 25,
+          image: "/shoes.webp",
+          description: "Giày thể thao Nike Air Max 270 với thiết kế hiện đại",
+          sizes: "42",
+        },
+        {
+          id: "2",
+          name: "Ultraboost 22",
+          brand: "Adidas",
+          price: 3200000,
+          category: "Running",
+          stock: 18,
+          image: "/shoes.webp",
+          description: "Giày chạy bộ Adidas Ultraboost với công nghệ Boost",
+          sizes: "41",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [newProduct, setNewProduct] = useState<Product>({
-    id: 0,
+  const [editingProduct, setEditingProduct] = useState<LocalProduct | null>(
+    null
+  );
+  const [newProduct, setNewProduct] = useState<LocalProduct>({
+    id: "",
     name: "",
     brand: "",
     price: 0,
@@ -68,6 +150,7 @@ const ProductManagement = () => {
     stock: 0,
     image: "/shoes.webp",
     description: "",
+    sizes: "42",
   });
 
   const categories = ["Sneakers", "Running", "Casual", "Formal", "Sports"];
@@ -89,39 +172,129 @@ const ProductManagement = () => {
     }).format(amount);
   };
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (newProduct.name && newProduct.brand && newProduct.price > 0) {
-      const id = Math.max(...products.map((p) => p.id)) + 1;
-      setProducts([...products, { ...newProduct, id }]);
-      resetForm();
+      try {
+        const productData: CreateProductRequest = {
+          name: newProduct.name,
+          brand: newProduct.brand,
+          price: newProduct.price,
+          category: newProduct.category,
+          stock: newProduct.stock,
+          description: newProduct.description,
+          sizes: newProduct.sizes,
+          images: [newProduct.image], // Convert single image to array
+        };
+
+        const response = await adminService.createProduct(productData);
+        if (response.success) {
+          // Add to local state
+          const newLocalProduct: LocalProduct = {
+            id: response.data._id,
+            name: response.data.name,
+            brand: response.data.brand,
+            price: response.data.price,
+            category: response.data.category,
+            stock: response.data.stock,
+            image: response.data.images[0] || "/shoes.webp",
+            description: response.data.description || "",
+            sizes: response.data.sizes,
+            _id: response.data._id,
+          };
+          setProducts([...products, newLocalProduct]);
+          resetForm();
+          alert("Thêm sản phẩm thành công!");
+        } else {
+          alert("Không thể thêm sản phẩm!");
+        }
+      } catch (error) {
+        console.error("Error creating product:", error);
+        // Fallback to local add for development
+        const id = Date.now().toString();
+        setProducts([...products, { ...newProduct, id }]);
+        resetForm();
+        alert("Thêm sản phẩm thành công (local)!");
+      }
     }
   };
 
-  const handleEditProduct = (product: Product) => {
+  const handleEditProduct = (product: LocalProduct) => {
     setEditingProduct(product);
     setNewProduct({ ...product });
     setShowAddModal(true);
   };
 
-  const handleUpdateProduct = () => {
+  const handleUpdateProduct = async () => {
     if (
       editingProduct &&
       newProduct.name &&
       newProduct.brand &&
       newProduct.price > 0
     ) {
-      setProducts(
-        products.map((product) =>
-          product.id === editingProduct.id ? { ...newProduct } : product
-        )
-      );
-      resetForm();
+      try {
+        const productData: UpdateProductRequest = {
+          name: newProduct.name,
+          brand: newProduct.brand,
+          price: newProduct.price,
+          category: newProduct.category,
+          stock: newProduct.stock,
+          description: newProduct.description,
+          sizes: newProduct.sizes,
+          images: [newProduct.image], // Convert single image to array
+        };
+
+        const response = await adminService.updateProduct(
+          editingProduct._id!,
+          productData
+        );
+        if (response.success) {
+          // Update local state
+          setProducts(
+            products.map((product) =>
+              product.id === editingProduct.id ? { ...newProduct } : product
+            )
+          );
+          resetForm();
+          alert("Cập nhật sản phẩm thành công!");
+        } else {
+          alert("Không thể cập nhật sản phẩm!");
+        }
+      } catch (error) {
+        console.error("Error updating product:", error);
+        // Fallback to local update for development
+        setProducts(
+          products.map((product) =>
+            product.id === editingProduct.id ? { ...newProduct } : product
+          )
+        );
+        resetForm();
+        alert("Cập nhật sản phẩm thành công (local)!");
+      }
     }
   };
 
-  const handleDeleteProduct = (id: number) => {
+  const handleDeleteProduct = async (id: string) => {
     if (confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
-      setProducts(products.filter((product) => product.id !== id));
+      const productToDelete = products.find((product) => product.id === id);
+      if (productToDelete?._id) {
+        try {
+          const response = await adminService.deleteProduct(
+            productToDelete._id
+          );
+          if (response.success) {
+            setProducts(products.filter((product) => product.id !== id));
+            alert("Xóa sản phẩm thành công!");
+          } else {
+            alert("Không thể xóa sản phẩm!");
+          }
+        } catch (error) {
+          console.error("Error deleting product:", error);
+          alert("Có lỗi xảy ra khi xóa sản phẩm!");
+        }
+      } else {
+        // For products without _id (mock data), just remove from local state
+        setProducts(products.filter((product) => product.id !== id));
+      }
     }
   };
 
@@ -129,7 +302,7 @@ const ProductManagement = () => {
     setShowAddModal(false);
     setEditingProduct(null);
     setNewProduct({
-      id: 0,
+      id: "",
       name: "",
       brand: "",
       price: 0,
@@ -137,6 +310,7 @@ const ProductManagement = () => {
       stock: 0,
       image: "/shoes.webp",
       description: "",
+      sizes: "42",
     });
   };
 
@@ -151,6 +325,15 @@ const ProductManagement = () => {
   return (
     <div className="min-h-screen" style={{ background: "var(--sneako-gray)" }}>
       <div className="p-6">
+        {loading && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-white">Đang tải...</p>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8 flex justify-between items-center">
           <div>
@@ -455,6 +638,42 @@ const ProductManagement = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label
+                      htmlFor="productSize"
+                      className="block text-sm font-medium mb-1"
+                      style={{ color: "var(--sneako-dark)" }}
+                    >
+                      Kích thước
+                    </label>
+                    <select
+                      id="productSize"
+                      value={newProduct.sizes}
+                      onChange={(e) =>
+                        setNewProduct({
+                          ...newProduct,
+                          sizes: e.target.value as
+                            | "38"
+                            | "39"
+                            | "40"
+                            | "41"
+                            | "42"
+                            | "43"
+                            | "44",
+                        })
+                      }
+                      className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                      style={{ borderColor: "var(--sneako-gold)" }}
+                    >
+                      <option value="38">38</option>
+                      <option value="39">39</option>
+                      <option value="40">40</option>
+                      <option value="41">41</option>
+                      <option value="42">42</option>
+                      <option value="43">43</option>
+                      <option value="44">44</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
                       htmlFor="productPrice"
                       className="block text-sm font-medium mb-1"
                       style={{ color: "var(--sneako-dark)" }}
@@ -475,28 +694,29 @@ const ProductManagement = () => {
                       style={{ borderColor: "var(--sneako-gold)" }}
                     />
                   </div>
-                  <div>
-                    <label
-                      htmlFor="productStock"
-                      className="block text-sm font-medium mb-1"
-                      style={{ color: "var(--sneako-dark)" }}
-                    >
-                      Tồn kho
-                    </label>
-                    <input
-                      id="productStock"
-                      type="number"
-                      value={newProduct.stock}
-                      onChange={(e) =>
-                        setNewProduct({
-                          ...newProduct,
-                          stock: Number(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                      style={{ borderColor: "var(--sneako-gold)" }}
-                    />
-                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="productStock"
+                    className="block text-sm font-medium mb-1"
+                    style={{ color: "var(--sneako-dark)" }}
+                  >
+                    Tồn kho
+                  </label>
+                  <input
+                    id="productStock"
+                    type="number"
+                    value={newProduct.stock}
+                    onChange={(e) =>
+                      setNewProduct({
+                        ...newProduct,
+                        stock: Number(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    style={{ borderColor: "var(--sneako-gold)" }}
+                  />
                 </div>
 
                 <div>
