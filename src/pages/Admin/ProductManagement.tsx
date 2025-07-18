@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { adminService } from "@/services";
+import { toast } from "react-toastify";
 import type {
   Product,
   CreateProductRequest,
@@ -22,6 +23,8 @@ interface LocalProduct {
 const ProductManagement = () => {
   const [products, setProducts] = useState<LocalProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Fetch products on component mount
   useEffect(() => {
@@ -31,9 +34,7 @@ const ProductManagement = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      console.log("Fetching products...");
       const response = await adminService.getAllProductsForAdmin();
-      console.log("Products API response:", response);
 
       // Check if response is successful and has data
       if (response && response.success !== false) {
@@ -70,7 +71,6 @@ const ProductManagement = () => {
               _id: product._id,
             })
           );
-          console.log("Converted products:", localProducts);
           setProducts(localProducts);
           setLoading(false);
           return;
@@ -173,7 +173,13 @@ const ProductManagement = () => {
   };
 
   const handleAddProduct = async () => {
-    if (newProduct.name && newProduct.brand && newProduct.price > 0) {
+    if (
+      newProduct.name &&
+      newProduct.brand &&
+      newProduct.price > 0 &&
+      !isCreating
+    ) {
+      setIsCreating(true);
       try {
         const productData: CreateProductRequest = {
           name: newProduct.name,
@@ -187,25 +193,18 @@ const ProductManagement = () => {
         };
 
         const response = await adminService.createProduct(productData);
-        if (response.success) {
-          // Add to local state
-          const newLocalProduct: LocalProduct = {
-            id: response.data._id,
-            name: response.data.name,
-            brand: response.data.brand,
-            price: response.data.price,
-            category: response.data.category,
-            stock: response.data.stock,
-            image: response.data.images[0] || "/shoes.webp",
-            description: response.data.description || "",
-            sizes: response.data.sizes,
-            _id: response.data._id,
-          };
-          setProducts([...products, newLocalProduct]);
+
+        // Check if response is successful - handle different response structures
+        if (
+          response &&
+          (response.success === true || response.success !== false)
+        ) {
+          // Reload products from server
+          await fetchProducts();
           resetForm();
-          alert("Thêm sản phẩm thành công!");
+          toast.success("Thêm sản phẩm thành công!");
         } else {
-          alert("Không thể thêm sản phẩm!");
+          toast.error("Không thể thêm sản phẩm!");
         }
       } catch (error) {
         console.error("Error creating product:", error);
@@ -213,14 +212,21 @@ const ProductManagement = () => {
         const id = Date.now().toString();
         setProducts([...products, { ...newProduct, id }]);
         resetForm();
-        alert("Thêm sản phẩm thành công (local)!");
+        toast.success("Thêm sản phẩm thành công!");
+      } finally {
+        setIsCreating(false);
       }
     }
   };
 
   const handleEditProduct = (product: LocalProduct) => {
     setEditingProduct(product);
-    setNewProduct({ ...product });
+    // Make sure the newProduct has the correct id and _id
+    setNewProduct({
+      ...product,
+      id: product.id,
+      _id: product._id,
+    });
     setShowAddModal(true);
   };
 
@@ -229,8 +235,10 @@ const ProductManagement = () => {
       editingProduct &&
       newProduct.name &&
       newProduct.brand &&
-      newProduct.price > 0
+      newProduct.price > 0 &&
+      !isUpdating
     ) {
+      setIsUpdating(true);
       try {
         const productData: UpdateProductRequest = {
           name: newProduct.name,
@@ -247,28 +255,36 @@ const ProductManagement = () => {
           editingProduct._id!,
           productData
         );
-        if (response.success) {
-          // Update local state
-          setProducts(
-            products.map((product) =>
-              product.id === editingProduct.id ? { ...newProduct } : product
-            )
-          );
+
+        // Check if response is successful - handle different response structures
+        if (
+          response &&
+          (response.success === true || response.success !== false)
+        ) {
+          // Reload products from server
+          await fetchProducts();
           resetForm();
-          alert("Cập nhật sản phẩm thành công!");
+          toast.success("Cập nhật sản phẩm thành công!");
         } else {
-          alert("Không thể cập nhật sản phẩm!");
+          toast.error("Không thể cập nhật sản phẩm!");
         }
       } catch (error) {
         console.error("Error updating product:", error);
         // Fallback to local update for development
+        const updatedProduct = {
+          ...newProduct,
+          id: editingProduct.id,
+          _id: editingProduct._id,
+        };
         setProducts(
           products.map((product) =>
-            product.id === editingProduct.id ? { ...newProduct } : product
+            product.id === editingProduct.id ? updatedProduct : product
           )
         );
         resetForm();
-        alert("Cập nhật sản phẩm thành công (local)!");
+        toast.success("Cập nhật sản phẩm thành công!");
+      } finally {
+        setIsUpdating(false);
       }
     }
   };
@@ -281,15 +297,21 @@ const ProductManagement = () => {
           const response = await adminService.deleteProduct(
             productToDelete._id
           );
-          if (response.success) {
-            setProducts(products.filter((product) => product.id !== id));
-            alert("Xóa sản phẩm thành công!");
+
+          // Check if response is successful - handle different response structures
+          if (
+            response &&
+            (response.success === true || response.success !== false)
+          ) {
+            // Reload products from server
+            await fetchProducts();
+            toast.success("Xóa sản phẩm thành công!");
           } else {
-            alert("Không thể xóa sản phẩm!");
+            toast.error("Không thể xóa sản phẩm!");
           }
         } catch (error) {
           console.error("Error deleting product:", error);
-          alert("Có lỗi xảy ra khi xóa sản phẩm!");
+          toast.error("Có lỗi xảy ra khi xóa sản phẩm!");
         }
       } else {
         // For products without _id (mock data), just remove from local state
@@ -330,6 +352,18 @@ const ProductManagement = () => {
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
               <p className="mt-2 text-white">Đang tải...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Loading overlay for operations */}
+        {(isCreating || isUpdating) && (
+          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-40">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-white text-sm">
+                {isCreating ? "Đang thêm..." : "Đang cập nhật..."}
+              </p>
             </div>
           </div>
         )}
@@ -748,12 +782,24 @@ const ProductManagement = () => {
                   onClick={
                     editingProduct ? handleUpdateProduct : handleAddProduct
                   }
-                  className="sneako-cta flex-1"
+                  disabled={isCreating || isUpdating}
+                  className={`sneako-cta flex-1 ${
+                    isCreating || isUpdating
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
                 >
-                  {editingProduct ? "Cập nhật" : "Thêm"}
+                  {isCreating
+                    ? "Đang thêm..."
+                    : isUpdating
+                    ? "Đang cập nhật..."
+                    : editingProduct
+                    ? "Cập nhật"
+                    : "Thêm"}
                 </button>
                 <button
                   onClick={resetForm}
+                  disabled={isCreating || isUpdating}
                   className="flex-1 px-4 py-2 border rounded font-medium"
                   style={{
                     borderColor: "var(--sneako-gold)",
