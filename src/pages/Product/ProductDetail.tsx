@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { productService } from "@/services";
+import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import { Particles } from "@/components";
 import { cartService } from "@/services/cartService";
@@ -96,6 +97,27 @@ const ProductDetail: React.FC = () => {
       {/* Glassmorphism background overlay */}
       <Particles />
       <div className="relative w-full max-w-6xl mx-auto z-10 flex flex-col gap-10">
+        {/* Nút quay về */}
+        <button
+          className="absolute left-4 top-6 flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 border border-[color:var(--sneako-gold,#e6c066)] text-[color:var(--sneako-gold,#e6c066)] font-semibold shadow hover:bg-yellow-100 transition-all duration-200 z-20"
+          onClick={() => navigate(-1)}
+        >
+          <svg
+            width="20"
+            height="20"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Quay về
+        </button>
         {/* Top info */}
         <div className="flex flex-col md:flex-row gap-10 md:gap-20 items-center w-full">
           {/* Ảnh sản phẩm lớn nổi bật */}
