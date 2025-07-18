@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Drawer,
   DrawerContent,
@@ -7,19 +7,36 @@ import {
   DrawerFooter,
   DrawerClose,
 } from "@/components/ui/drawer";
-import { useCart } from "@/contexts/CartContext";
+import { cartService } from "@/services/cartService";
 
 const CartDrawer: React.FC<{
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }> = ({ open, onOpenChange }) => {
-  const { cart, removeFromCart } = useCart();
-  const handleRemove = (id: number, size: string) => {
-    // Xóa theo id và size, ở đây chỉ xóa theo id đầu tiên tìm thấy (giả sử size đầu tiên)
-    const item = cart.find((item) => item.id === id);
-    if (item) removeFromCart(id, item.size);
+  const [cart, setCart] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+
+  useEffect(() => {
+    if (!open) return;
+    setLoading(true);
+    cartService.getCart()
+      .then(data => setCart(data))
+      .catch(() => setCart([]))
+      .finally(() => setLoading(false));
+  }, [open, refresh]);
+
+  const handleRemove = async (itemId: string) => {
+    setLoading(true);
+    try {
+      await cartService.deleteCartItem(itemId);
+      setRefresh(r => r + 1);
+    } finally {
+      setLoading(false);
+    }
   };
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -38,26 +55,28 @@ const CartDrawer: React.FC<{
         </DrawerHeader>
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-4 bg-white">
-          {cart.length === 0 ? (
+          {loading ? (
+            <div className="text-lg text-gray-500 text-center py-6">Đang tải...</div>
+          ) : cart.length === 0 ? (
             <div className="text-lg text-gray-500 text-center py-6">
-              Your cart is empty.
+              Giỏ hàng của bạn đang trống.
             </div>
           ) : (
             <ul className="flex flex-col gap-6">
               {cart.map((item) => (
-                <li key={item.id} className="flex items-center gap-4">
+                <li key={item._id} className="flex items-center gap-4">
                   <img
-                    src={item.images[0]}
-                    alt={item.name}
+                    src={item.product.images[0]}
+                    alt={item.product.name}
                     className="w-16 h-16 object-contain rounded bg-gray-100 border"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-base truncate">
-                      {item.name}
+                      {item.product.name}
                     </div>
                     <div className="text-sm text-gray-500 mt-1">
                       <span className="font-semibold text-black">
-                        {item.quantity}
+                        {item.qty}
                       </span>
                       <span className="mx-1">×</span>
                       <span className="font-semibold text-black">
@@ -66,7 +85,7 @@ const CartDrawer: React.FC<{
                     </div>
                   </div>
                   <button
-                    onClick={() => handleRemove(item.id, item.size)}
+                    onClick={() => handleRemove(item._id)}
                     className="text-gray-400 hover:text-red-500 transition-colors text-lg px-2"
                     title="Xóa"
                   >

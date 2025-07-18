@@ -20,6 +20,7 @@ import ProtectedRoute from "@/routes/ProtectedRoute";
 import { createBrowserRouter } from "react-router-dom";
 
 import Checkout from "@/pages/Checkout";
+import PaymentDetail from "@/pages/PaymentDetail";
 
 const router = createBrowserRouter([
   {
@@ -52,6 +53,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Cart />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "payment_detail",
+        element: (
+          <ProtectedRoute>
+            <PaymentDetail />
           </ProtectedRoute>
         ),
       },

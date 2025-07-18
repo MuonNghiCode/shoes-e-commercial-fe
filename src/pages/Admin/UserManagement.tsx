@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { adminService } from "@/services";
-import type { Account, CreateUserRequest, UpdateUserRequest } from "@/types";
+import { toast } from "react-toastify";
+import type { Account, UpdateUserRequest } from "@/types";
 
 interface LocalUser {
   username: string;
@@ -26,6 +27,7 @@ const UserManagement = () => {
     role: "user",
   });
   const [loading, setLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Fetch users on component mount
   useEffect(() => {
@@ -34,9 +36,7 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      console.log("Fetching users...");
       const response = await adminService.getAllAccounts();
-      console.log("Users API response:", response);
 
       // Check if response is successful and has data
       if (response && response.success !== false) {
@@ -67,14 +67,12 @@ const UserManagement = () => {
             dateOfBirth: user.dateOfBirth,
             _id: user._id,
           }));
-          console.log("Converted users:", localUsers);
           setUsers(localUsers);
           setLoading(false);
           return;
         }
       }
 
-      console.error("Failed to fetch users - invalid response:", response);
       // Fallback to mock data
       setUsers([
         {
@@ -112,44 +110,21 @@ const UserManagement = () => {
     }
   };
 
-  const filteredUsers = users.filter((user) =>
-    user.username.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter((user) => {
+    // Get current admin info from localStorage or context
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const currentUsername = currentUser.username || currentUser.name;
 
-  const handleAddUser = async () => {
-    if (newUser.username && newUser.password) {
-      try {
-        const userData: CreateUserRequest = {
-          name: newUser.username,
-          email: newUser.email,
-          password: newUser.password,
-          isAdmin: newUser.role === "admin",
-          phone: newUser.phone,
-          address: newUser.address,
-          gender: newUser.gender,
-          dateOfBirth: newUser.dateOfBirth,
-        };
+    // Filter out current admin from the list
+    const isCurrentAdmin = user.username === currentUsername;
 
-        const response = await adminService.createAccount(userData);
-        if (response.success) {
-          // Add to local state
-          setUsers([...users, { ...newUser, _id: response.data._id }]);
-          setNewUser({ username: "", email: "", password: "", role: "user" });
-          setShowAddModal(false);
-          alert("Tạo tài khoản thành công!");
-        } else {
-          alert("Không thể tạo tài khoản!");
-        }
-      } catch (error) {
-        console.error("Error creating user:", error);
-        // Fallback to local add for development
-        setUsers([...users, { ...newUser, _id: Date.now().toString() }]);
-        setNewUser({ username: "", email: "", password: "", role: "user" });
-        setShowAddModal(false);
-        alert("Tạo tài khoản thành công (local)!");
-      }
-    }
-  };
+    // Apply search filter
+    const matchesSearch = user.username
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    return !isCurrentAdmin && matchesSearch;
+  });
 
   const handleEditUser = (user: LocalUser) => {
     setEditingUser(user);
@@ -158,7 +133,47 @@ const UserManagement = () => {
   };
 
   const handleUpdateUser = async () => {
-    if (editingUser && newUser.username && editingUser._id) {
+    if (editingUser && newUser.username && editingUser._id && !isUpdating) {
+      // Validate email uniqueness
+      const emailExists = users.some(
+        (user) => user.email === newUser.email && user._id !== editingUser._id
+      );
+      if (emailExists) {
+        toast.error("Email này đã được sử dụng bởi người dùng khác!");
+        return;
+      }
+
+      // Validate date of birth
+      if (newUser.dateOfBirth) {
+        const birthDate = new Date(newUser.dateOfBirth);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+
+        if (
+          monthDiff < 0 ||
+          (monthDiff === 0 && today.getDate() < birthDate.getDate())
+        ) {
+          age--;
+        }
+
+        if (birthDate > today) {
+          toast.error("Ngày sinh không thể là ngày trong tương lai!");
+          return;
+        }
+
+        if (age < 13) {
+          toast.error("Tuổi phải từ 13 tuổi trở lên!");
+          return;
+        }
+
+        if (age > 100) {
+          toast.error("Tuổi không thể lớn hơn 100!");
+          return;
+        }
+      }
+
+      setIsUpdating(true);
       try {
         const userData: UpdateUserRequest = {
           name: newUser.username,
@@ -170,25 +185,26 @@ const UserManagement = () => {
           dateOfBirth: newUser.dateOfBirth,
         };
 
+        // Don't include password in update requests - keep existing password
+
         const response = await adminService.updateAccount(
           editingUser._id,
           userData
         );
-        if (response.success) {
-          // Update local state
-          setUsers(
-            users.map((user) =>
-              user._id === editingUser._id
-                ? { ...newUser, _id: user._id }
-                : user
-            )
-          );
+
+        // Check if response is successful - handle different response structures
+        if (
+          response &&
+          (response.success === true || response.success !== false)
+        ) {
+          // Reload users from server
+          await fetchUsers();
           setEditingUser(null);
           setNewUser({ username: "", email: "", password: "", role: "user" });
           setShowAddModal(false);
-          alert("Cập nhật tài khoản thành công!");
+          toast.success("Cập nhật người dùng thành công!");
         } else {
-          alert("Không thể cập nhật tài khoản!");
+          toast.error("Không thể cập nhật tài khoản!");
         }
       } catch (error) {
         console.error("Error updating user:", error);
@@ -203,7 +219,9 @@ const UserManagement = () => {
         setEditingUser(null);
         setNewUser({ username: "", email: "", password: "", role: "user" });
         setShowAddModal(false);
-        alert("Cập nhật tài khoản thành công!");
+        toast.success("Cập nhật người dùng thành công!");
+      } finally {
+        setIsUpdating(false);
       }
     }
   };
@@ -214,15 +232,21 @@ const UserManagement = () => {
       if (userToDelete?._id) {
         try {
           const response = await adminService.deleteAccount(userToDelete._id);
-          if (response.success) {
-            setUsers(users.filter((user) => user.username !== username));
-            alert("Xóa tài khoản thành công!");
+
+          // Check if response is successful - handle different response structures
+          if (
+            response &&
+            (response.success === true || response.success !== false)
+          ) {
+            // Reload users from server
+            await fetchUsers();
+            toast.success("Xóa người dùng thành công!");
           } else {
-            alert("Không thể xóa tài khoản!");
+            toast.error("Không thể xóa tài khoản!");
           }
         } catch (error) {
           console.error("Error deleting user:", error);
-          alert("Có lỗi xảy ra khi xóa tài khoản!");
+          toast.error("Có lỗi xảy ra khi xóa tài khoản!");
         }
       } else {
         // For users without _id (mock data), just remove from local state
@@ -235,6 +259,8 @@ const UserManagement = () => {
     setShowAddModal(false);
     setEditingUser(null);
     setNewUser({ username: "", email: "", password: "", role: "user" });
+    // Reload users after closing modal to ensure data is fresh
+    fetchUsers();
   };
 
   if (loading) {
@@ -254,6 +280,16 @@ const UserManagement = () => {
   return (
     <div className="min-h-screen" style={{ background: "var(--sneako-gray)" }}>
       <div className="p-6">
+        {/* Loading overlay for operations */}
+        {isUpdating && (
+          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-40">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-white text-sm">Đang cập nhật...</p>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8 flex justify-between items-center">
           <div>
@@ -267,9 +303,6 @@ const UserManagement = () => {
               Quản lý tài khoản người dùng hệ thống
             </p>
           </div>
-          <button className="sneako-cta" onClick={() => setShowAddModal(true)}>
-            + Thêm người dùng
-          </button>
         </div>
 
         {/* Search and Filter */}
@@ -311,29 +344,41 @@ const UserManagement = () => {
             Danh sách người dùng ({filteredUsers.length})
           </h2>
           <div className="overflow-x-auto">
-            <table className="min-w-full">
+            <table className="min-w-full table-fixed">
               <thead>
                 <tr style={{ borderBottom: "2px solid var(--sneako-gold)" }}>
                   <th
-                    className="text-left py-3 px-4 font-semibold"
+                    className="text-left py-3 px-4 font-semibold w-32"
                     style={{ color: "var(--sneako-dark)" }}
                   >
                     Tên đăng nhập
                   </th>
                   <th
-                    className="text-left py-3 px-4 font-semibold"
+                    className="text-left py-3 px-4 font-semibold w-48"
+                    style={{ color: "var(--sneako-dark)" }}
+                  >
+                    Email
+                  </th>
+                  <th
+                    className="text-left py-3 px-4 font-semibold w-32"
+                    style={{ color: "var(--sneako-dark)" }}
+                  >
+                    Số điện thoại
+                  </th>
+                  <th
+                    className="text-left py-3 px-4 font-semibold w-40"
+                    style={{ color: "var(--sneako-dark)" }}
+                  >
+                    Địa chỉ
+                  </th>
+                  <th
+                    className="text-left py-3 px-4 font-semibold w-28"
                     style={{ color: "var(--sneako-dark)" }}
                   >
                     Vai trò
                   </th>
                   <th
-                    className="text-left py-3 px-4 font-semibold"
-                    style={{ color: "var(--sneako-dark)" }}
-                  >
-                    Trạng thái
-                  </th>
-                  <th
-                    className="text-left py-3 px-4 font-semibold"
+                    className="text-left py-3 px-4 font-semibold w-28"
                     style={{ color: "var(--sneako-dark)" }}
                   >
                     Thao tác
@@ -355,7 +400,39 @@ const UserManagement = () => {
                       className="py-3 px-4 font-medium"
                       style={{ color: "var(--sneako-dark)" }}
                     >
-                      {user.username}
+                      <div className="max-w-32 truncate" title={user.username}>
+                        {user.username}
+                      </div>
+                    </td>
+                    <td
+                      className="py-3 px-4"
+                      style={{ color: "var(--sneako-dark)" }}
+                    >
+                      <div className="max-w-48 truncate" title={user.email}>
+                        {user.email}
+                      </div>
+                    </td>
+                    <td
+                      className="py-3 px-4"
+                      style={{ color: "var(--sneako-dark)" }}
+                    >
+                      <div
+                        className="max-w-32 truncate"
+                        title={user.phone || "Chưa cập nhật"}
+                      >
+                        {user.phone || "Chưa cập nhật"}
+                      </div>
+                    </td>
+                    <td
+                      className="py-3 px-4"
+                      style={{ color: "var(--sneako-dark)" }}
+                    >
+                      <div
+                        className="max-w-35 truncate"
+                        title={user.address || "Chưa cập nhật"}
+                      >
+                        {user.address || "Chưa cập nhật"}
+                      </div>
                     </td>
                     <td className="py-3 px-4">
                       <span
@@ -366,11 +443,6 @@ const UserManagement = () => {
                         }`}
                       >
                         {user.role === "admin" ? "Quản trị viên" : "Người dùng"}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Hoạt động
                       </span>
                     </td>
                     <td className="py-3 px-4">
@@ -417,7 +489,7 @@ const UserManagement = () => {
                 className="text-lg font-bold mb-4"
                 style={{ color: "var(--sneako-dark)" }}
               >
-                {editingUser ? "Sửa người dùng" : "Thêm người dùng mới"}
+                Sửa người dùng
               </h3>
 
               <div className="space-y-4">
@@ -468,24 +540,102 @@ const UserManagement = () => {
 
                 <div>
                   <label
-                    htmlFor="password"
+                    htmlFor="phone"
                     className="block text-sm font-medium mb-1"
                     style={{ color: "var(--sneako-dark)" }}
                   >
-                    Mật khẩu
+                    Số điện thoại
                   </label>
                   <input
-                    id="password"
-                    type="password"
-                    value={newUser.password}
+                    id="phone"
+                    type="tel"
+                    value={newUser.phone || ""}
                     onChange={(e) =>
-                      setNewUser({ ...newUser, password: e.target.value })
+                      setNewUser({ ...newUser, phone: e.target.value })
                     }
                     className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
                     style={{
                       borderColor: "var(--sneako-gold)",
                     }}
+                    placeholder="Nhập số điện thoại"
                   />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="address"
+                    className="block text-sm font-medium mb-1"
+                    style={{ color: "var(--sneako-dark)" }}
+                  >
+                    Địa chỉ
+                  </label>
+                  <input
+                    id="address"
+                    type="text"
+                    value={newUser.address || ""}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, address: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    style={{
+                      borderColor: "var(--sneako-gold)",
+                    }}
+                    placeholder="Nhập địa chỉ"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="gender"
+                      className="block text-sm font-medium mb-1"
+                      style={{ color: "var(--sneako-dark)" }}
+                    >
+                      Giới tính
+                    </label>
+                    <select
+                      id="gender"
+                      value={newUser.gender || ""}
+                      onChange={(e) =>
+                        setNewUser({
+                          ...newUser,
+                          gender: e.target.value as "male" | "female" | "other",
+                        })
+                      }
+                      className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                      style={{
+                        borderColor: "var(--sneako-gold)",
+                      }}
+                    >
+                      <option value="">Chọn giới tính</option>
+                      <option value="male">Nam</option>
+                      <option value="female">Nữ</option>
+                      <option value="other">Khác</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="dateOfBirth"
+                      className="block text-sm font-medium mb-1"
+                      style={{ color: "var(--sneako-dark)" }}
+                    >
+                      Ngày sinh
+                    </label>
+                    <input
+                      id="dateOfBirth"
+                      type="date"
+                      value={newUser.dateOfBirth || ""}
+                      onChange={(e) =>
+                        setNewUser({ ...newUser, dateOfBirth: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                      style={{
+                        borderColor: "var(--sneako-gold)",
+                      }}
+                      max={new Date().toISOString().split("T")[0]} // Không cho phép chọn ngày tương lai
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -518,13 +668,17 @@ const UserManagement = () => {
 
               <div className="flex gap-3 mt-6">
                 <button
-                  onClick={editingUser ? handleUpdateUser : handleAddUser}
-                  className="sneako-cta flex-1"
+                  onClick={handleUpdateUser}
+                  disabled={isUpdating}
+                  className={`sneako-cta flex-1 ${
+                    isUpdating ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                 >
-                  {editingUser ? "Cập nhật" : "Thêm"}
+                  {isUpdating ? "Đang cập nhật..." : "Cập nhật"}
                 </button>
                 <button
                   onClick={closeModal}
+                  disabled={isUpdating}
                   className="flex-1 px-4 py-2 border rounded font-medium"
                   style={{
                     borderColor: "var(--sneako-gold)",

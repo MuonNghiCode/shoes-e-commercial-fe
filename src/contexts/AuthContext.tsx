@@ -47,8 +47,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         .getProfile()
         .then((response) => {
           // Lấy dữ liệu người dùng từ response.data
-          const userData = response.data.user;
-          setUser(userData);
+          const userData =
+            response.data.account !== undefined
+              ? response.data.account
+              : response.data;
+          setUser({ ...userData });
           localStorage.setItem("user", JSON.stringify(userData));
         })
         .catch((error) => {
@@ -123,8 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     data: Partial<Account> & { password?: string }
   ) => {
     const response = await authService.updateProfile(undefined, data);
-    // Lấy dữ liệu người dùng đã cập nhật từ response.data
-    const updatedUser = response.data;
+     const updatedUser = response.account ? response.account : response;
     setUser({ ...updatedUser });
     localStorage.setItem("user", JSON.stringify(updatedUser));
     return updatedUser;

@@ -1,13 +1,14 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { productService } from "@/services";
 import React, { useState } from "react";
 import { Particles } from "@/components";
-import { useCart } from "@/contexts/CartContext";
+import { cartService } from "@/services/cartService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const ProductDetail: React.FC = () => {
+  const navigate = useNavigate();
   let { user } = useAuth();
   // Nếu user chưa có, lấy từ localStorage
   if (!user || !user._id) {
@@ -20,7 +21,8 @@ const ProductDetail: React.FC = () => {
   const [shoe, setShoe] = useState<any>(null);
   const [activeImgIdx, setActiveImgIdx] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const { addToCart } = useCart();
+  const [isAdding, setIsAdding] = useState(false);
+  const [isBuying, setIsBuying] = useState(false);
 
   React.useEffect(() => {
     if (id) {
@@ -45,6 +47,50 @@ const ProductDetail: React.FC = () => {
     );
   }
 
+  const handleAddToCart = async () => {
+    if (!selectedSize || !user) return;
+    setIsAdding(true);
+    try {
+      await cartService.addToCart({
+        product: shoe._id || shoe.id,
+        price: shoe.price,
+        qty: 1,
+        size: selectedSize
+      });
+      toast.success(`Đã thêm ${shoe.name} (Size ${selectedSize}) vào giỏ hàng!`);
+    } catch (e) {
+      toast.error("Không thể thêm vào giỏ hàng. Vui lòng thử lại!");
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (!selectedSize || !user) {
+      toast.error("Vui lòng chọn size và đăng nhập!");
+      return;
+    }
+    
+    setIsBuying(true);
+    try {
+      // Thêm sản phẩm vào giỏ hàng
+      await cartService.addToCart({
+        product: shoe._id || shoe.id,
+        price: shoe.price,
+        qty: 1,
+        size: selectedSize
+      });
+      
+      // Chuyển hướng đến trang payment detail
+      navigate("/payment_detail");
+      toast.success(`Đang chuyển đến trang thanh toán...`);
+    } catch (e) {
+      toast.error("Không thể thực hiện mua ngay. Vui lòng thử lại!");
+    } finally {
+      setIsBuying(false);
+    }
+  };
+
   return (
     <section className="min-h-screen w-full px-2 md:px-0 py-10 flex flex-col items-center bg-gradient-to-br from-[color:var(--sneako-beige,#f5f5dc)] via-white to-[color:var(--sneako-gold,#e6c066)] relative overflow-hidden">
       {/* Glassmorphism background overlay */}
@@ -63,7 +109,6 @@ const ProductDetail: React.FC = () => {
             />
             {/* Hiệu ứng ánh sáng */}
             <div className="absolute inset-0 pointer-events-none rounded-[2.5rem] bg-gradient-to-t from-white/30 via-transparent to-white/10" />
-
             {/* Thumbnails dưới ảnh */}
             {Array.isArray(shoe.images) && shoe.images.length > 1 && (
               <div className="absolute left-1/2 -translate-x-1/2 bottom-4 flex gap-1 bg-white/80 rounded-xl px-2 py-1 shadow border border-[color:var(--sneako-gold,#e6c066)]/30 items-center">
@@ -135,14 +180,14 @@ const ProductDetail: React.FC = () => {
                   <label
                     key={sz}
                     className={`px-3 py-1 rounded-lg border-2 cursor-pointer font-medium transition-colors duration-150 text-sm select-none bg-white/60 border-[color:var(--sneako-gold,#e6c066)]/40 ${
-                      selectedSize === sz
+                      selectedSize === String(sz)
                         ? "bg-[color:var(--sneako-gold,#e6c066)]/20 border-[color:var(--sneako-gold,#e6c066)] text-[color:var(--sneako-gold,#e6c066)]"
                         : ""
                     }`}
                   >
                     <input
                       type="checkbox"
-                      checked={selectedSize === sz}
+                      checked={selectedSize === String(sz)}
                       onChange={() =>
                         setSelectedSize(
                           selectedSize === String(sz) ? null : String(sz)
@@ -161,21 +206,8 @@ const ProductDetail: React.FC = () => {
                 className={`w-full md:w-fit flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-white text-[color:var(--sneako-gold)] font-extrabold border-2 border-[color:var(--sneako-gold)] shadow-md hover:bg-yellow-100 hover:text-[color:var(--sneako-gold)] transition-all duration-200 tracking-wide hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[color:var(--sneako-gold)] disabled:opacity-60 mb-3 ${
                   !selectedSize ? "text-base" : "text-lg"
                 }`}
-                disabled={!selectedSize}
-                onClick={() => {
-                  if (selectedSize && shoe) {
-                    addToCart({
-                      id: shoe.id,
-                      name: shoe.name,
-                      price: shoe.price,
-                      images: shoe.images,
-                      size: selectedSize,
-                    });
-                    toast.success(
-                      `Đã thêm ${shoe.name} (Size ${selectedSize}) vào giỏ hàng!`
-                    );
-                  }
-                }}
+                disabled={!selectedSize || isAdding}
+                onClick={handleAddToCart}
               >
                 <svg
                   width="22"
@@ -192,7 +224,9 @@ const ProductDetail: React.FC = () => {
                     d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m13-9l2 9m-5-9V6a2 2 0 10-4 0v3"
                   />
                 </svg>
-                {selectedSize
+                {isAdding
+                  ? "Đang thêm..."
+                  : selectedSize
                   ? `Bỏ vào giỏ hàng (Size ${selectedSize})`
                   : "Chọn size"}
               </button>
@@ -201,7 +235,8 @@ const ProductDetail: React.FC = () => {
                 className={`w-full md:w-fit flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-[color:var(--sneako-gold)] text-[color:var(--sneako-dark)] font-extrabold border-2 border-[color:var(--sneako-gold)] shadow-md hover:bg-yellow-300 hover:text-black transition-all duration-200 tracking-wide hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[color:var(--sneako-gold)] disabled:opacity-60 mb-3 ${
                   !selectedSize ? "text-base" : "text-lg"
                 }`}
-                disabled={!selectedSize}
+                disabled={!selectedSize || isBuying}
+                onClick={handleBuyNow}
               >
                 <svg
                   width="22"
@@ -215,15 +250,18 @@ const ProductDetail: React.FC = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth="2"
-                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m13-9l2 9m-5-9V6a2 2 0 10-4 0v3"
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
                   />
                 </svg>
-                {selectedSize ? `Mua ngay (Size ${selectedSize})` : "Chọn size"}
+                {isBuying
+                  ? "Đang xử lý..."
+                  : selectedSize
+                  ? `Mua ngay (Size ${selectedSize})`
+                  : "Chọn size"}
               </button>
             </div>
           </div>
         </div>
-
         {/* Đánh giá & Review */}
         <div className="w-full mt-8 flex flex-col gap-6">
           <h2 className="text-2xl font-bold text-[color:var(--sneako-brown,#3d2c18)] mb-2 tracking-wide drop-shadow">

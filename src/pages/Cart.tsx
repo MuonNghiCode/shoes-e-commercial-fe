@@ -1,28 +1,54 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useCart } from "@/contexts/CartContext";
-
+import { cartService } from "@/services/cartService";
 
 const Cart: React.FC = () => {
-  const { cart, removeFromCart, updateQuantity } = useCart();
+  const [cart, setCart] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const [shipping, setShipping] = useState<string>("free");
+  const [refresh, setRefresh] = useState(0);
 
-  const handleQuantityChange = (id: number, size: string, quantity: number) => {
-    updateQuantity(id, size, Math.max(1, quantity));
+  useEffect(() => {
+    setLoading(true);
+    cartService.getCart()
+      .then(data => setCart(data))
+      .catch(() => setCart([]))
+      .finally(() => setLoading(false));
+  }, [refresh]);
+
+  const handleQuantityChange = async (itemId: string, quantity: number) => {
+    setLoading(true);
+    try {
+      await cartService.updateCartItem(itemId, quantity);
+      setRefresh(r => r + 1);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRemove = (id: number, size: string) => {
-    removeFromCart(id, size);
+  const handleRemove = async (itemId: string) => {
+    setLoading(true);
+    try {
+      await cartService.deleteCartItem(itemId);
+      setRefresh(r => r + 1);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const subtotal = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + item.price * item.qty,
     0
   );
   let shippingCost = 0;
   if (shipping === "flat") shippingCost = 10000;
   if (shipping === "pickup") shippingCost = 15000;
   const total = subtotal + shippingCost;
+
+  const handleCheckout = () => {
+    // Khi thanh toán thành công, nên xóa cart ở backend và reload lại cart FE
+    window.location.href = "/payment_detail";
+  };
 
   return (
     <div className="max-w-[1200px] mx-auto mt-10 p-0">
@@ -51,7 +77,9 @@ const Cart: React.FC = () => {
       <div className="flex flex-col md:flex-row gap-10 items-start">
         {/* Left: Cart Table */}
         <div className="flex-1 bg-white rounded-2xl shadow-lg p-8 mb-10">
-          {cart.length === 0 ? (
+          {loading ? (
+            <div className="text-xl text-gray-400 text-center py-10">Đang tải...</div>
+          ) : cart.length === 0 ? (
             <div className="text-xl text-gray-400 text-center py-10">
               Giỏ hàng của bạn đang trống.
             </div>
@@ -70,14 +98,14 @@ const Cart: React.FC = () => {
               </thead>
               <tbody>
                 {cart.map((item) => (
-                  <tr key={item.id + item.size} className="border-b border-[#f7f3ea]">
+                  <tr key={item._id} className="border-b border-[#f7f3ea]">
                     <td className="flex items-center gap-4 p-3">
                       <img
-                        src={item.images[0]}
-                        alt={item.name}
+                        src={item.product.images[0]}
+                        alt={item.product.name}
                         className="w-20 h-15 object-contain rounded-lg bg-[#faf9f6]"
                       />
-                      <span className="font-semibold">{item.name} <span className="ml-2 text-xs text-gray-500">(Size {item.size})</span></span>
+                      <span className="font-semibold">{item.product.name} <span className="ml-2 text-xs text-gray-500">(Size {item.size || "-"})</span></span>
                     </td>
                     <td className="text-center font-semibold text-[#bfa046]">
                       {item.price.toLocaleString()}đ
@@ -86,19 +114,19 @@ const Cart: React.FC = () => {
                       <input
                         type="number"
                         min={1}
-                        value={item.quantity}
+                        value={item.qty}
                         onChange={(e) =>
-                          handleQuantityChange(item.id, item.size, Number(e.target.value))
+                          handleQuantityChange(item._id, Number(e.target.value))
                         }
                         className="w-16 py-1 rounded-md  border-[#e5d7b6] text-center"
                       />
                     </td>
                     <td className="text-center font-semibold text-[#bfa046]">
-                      {(item.price * item.quantity).toLocaleString()}đ
+                      {(item.price * item.qty).toLocaleString()}đ
                     </td>
                     <td className="text-center">
                       <button
-                        onClick={() => handleRemove(item.id, item.size)}
+                        onClick={() => handleRemove(item._id)}
                         className=" text-gray-400 cursor-pointer"
                       >
                         x
@@ -117,51 +145,6 @@ const Cart: React.FC = () => {
             <span>Tạm tính</span>
             <span className="font-semibold">{subtotal.toLocaleString()}đ</span>
           </div>
-          <div className="mb-3">
-            <div className="mb-2">Vận chuyển</div>
-            <div>
-              <label className="block mb-1">
-                <input
-                  type="radio"
-                  name="shipping"
-                  value="free"
-                  checked={shipping === "free"}
-                  onChange={() => setShipping("free")}
-                  className="mr-2"
-                />
-                Miễn phí vận chuyển
-              </label>
-              <label className="block mb-1">
-                <input
-                  type="radio"
-                  name="shipping"
-                  value="flat"
-                  checked={shipping === "flat"}
-                  onChange={() => setShipping("flat")}
-                  className="mr-2"
-                />
-                Giao hàng tiêu chuẩn: 10.000đ
-              </label>
-              <label className="block">
-                <input
-                  type="radio"
-                  name="shipping"
-                  value="pickup"
-                  checked={shipping === "pickup"}
-                  onChange={() => setShipping("pickup")}
-                  className="mr-2"
-                />
-                Nhận tại cửa hàng
-              </label>
-            </div>
-            <div className="text-gray-400 text-xs mt-2">
-              Giao đến 211, 121, hcm, 1111, Afghanistan.
-              <br />
-              <a href="#" className="text-[#bfa046] underline">
-                Đổi địa chỉ
-              </a>
-            </div>
-          </div>
           <div className="flex justify-between font-bold text-xl my-6">
             <span>Tổng cộng</span>
             <span>{total.toLocaleString()}đ</span>
@@ -171,12 +154,9 @@ const Cart: React.FC = () => {
             whileHover={{ scale: 1.04 }}
             className="w-full bg-[color:var(--sneako-gold)] text-black text-lg rounded-lg hover:bg-yellow-400 py-3 cursor-pointer font-bold"
             disabled={cart.length === 0}
-            onClick={() => {
-              localStorage.setItem("cart", JSON.stringify(cart));
-              window.location.href = "/checkout";
-            }}
+            onClick={handleCheckout}
           >
-            Tiến hành thanh toán
+            Chi tiết thanh toán
           </motion.button>
         </div>
       </div>
