@@ -12,9 +12,9 @@ export interface ProductQueryParams {
   brand?: string;
   minPrice?: number;
   maxPrice?: number;
-  size?: '38' | '39' | '40' | '41' | '42' | '43' | '44';
+  size?: "38" | "39" | "40" | "41" | "42" | "43" | "44";
   sortBy?: string;
-  order?: 'asc' | 'desc';
+  order?: "asc" | "desc";
   page?: number;
   limit?: number;
 }
@@ -28,7 +28,7 @@ export interface OrderQueryParams {
   fromDate?: string;
   toDate?: string;
   sortBy?: string;
-  order?: 'asc' | 'desc';
+  order?: "asc" | "desc";
   page?: number;
   limit?: number;
 }
@@ -58,7 +58,15 @@ export interface ChangePasswordRequest {
 }
 
 // Product requests
-export type CreateProductRequest = Omit<import("./entities").Product, '_id' | 'averageRating' | 'numOfReviews' | 'reviews' | 'createdAt' | 'updatedAt'>;
+export type CreateProductRequest = Omit<
+  import("./entities").Product,
+  | "_id"
+  | "averageRating"
+  | "numOfReviews"
+  | "review"
+  | "createdAt"
+  | "updatedAt"
+>;
 export type UpdateProductRequest = Partial<CreateProductRequest>;
 
 // Review requests
@@ -90,4 +98,25 @@ export interface UpdateOrderItemRequest {
   price?: number;
   qty?: number;
 }
-  
+
+// Admin requests
+export interface CreateUserRequest {
+  name: string;
+  email: string;
+  password: string;
+  isAdmin?: boolean;
+  phone?: string;
+  address?: string;
+  gender?: "male" | "female" | "other";
+  dateOfBirth?: string;
+}
+
+export interface UpdateUserRequest {
+  name?: string;
+  email?: string;
+  isAdmin?: boolean;
+  phone?: string;
+  address?: string;
+  gender?: "male" | "female" | "other";
+  dateOfBirth?: string;
+}
