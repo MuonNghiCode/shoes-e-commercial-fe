@@ -5,16 +5,12 @@ import UserDropdown from "./UserDropdown";
 import { FaUserCircle, FaBars, FaShoppingCart } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
 import CartDrawer from "@/components/CartDrawer";
-import {
-  Drawer,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
-
+import { Drawer, DrawerTrigger } from "@/components/ui/drawer";
 
 const NAV_LINKS = [
   { label: "Home", to: "/" },
   { label: "Shop", to: "/product" },
-  { label: "Collections", to: "/collections" },
+  // { label: "Collections", to: "/collections" },
   { label: "About", to: "/about" },
   { label: "Contact", to: "/contact" },
   // Cart sẽ được render riêng bằng icon
@@ -162,19 +158,26 @@ const Header: React.FC<HeaderProps> = ({ isAdminLayout = false }) => {
         </nav>
         {/* CTA Button & User icon desktop */}
         <div className="hidden md:flex items-center gap-4">
-          {/* Cart icon (Drawer trigger) */}
-          <Drawer open={cartOpen} onOpenChange={setCartOpen}>
-            <DrawerTrigger asChild>
-              <button
-                className="flex items-center justify-center w-11 h-11 rounded-full bg-[#F5F5F3] border border-[#C9B37C] shadow hover:scale-105 focus:outline-none mr-2"
-                aria-label="Giỏ hàng"
-                type="button"
-              >
-                <FaShoppingCart size={26} color={location.pathname === "/cart" ? "#C9B37C" : "#2D1A10"} />
-              </button>
-            </DrawerTrigger>
-            <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
-          </Drawer>
+          {/* Cart icon (Drawer trigger) chỉ hiện khi đã đăng nhập */}
+          {isAuthenticated && (
+            <Drawer open={cartOpen} onOpenChange={setCartOpen}>
+              <DrawerTrigger asChild>
+                <button
+                  className="flex items-center justify-center w-11 h-11 rounded-full bg-[#F5F5F3] border border-[#C9B37C] shadow hover:scale-105 focus:outline-none mr-2"
+                  aria-label="Giỏ hàng"
+                  type="button"
+                >
+                  <FaShoppingCart
+                    size={26}
+                    color={
+                      location.pathname === "/cart" ? "#C9B37C" : "#2D1A10"
+                    }
+                  />
+                </button>
+              </DrawerTrigger>
+              <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
+            </Drawer>
+          )}
           {/* User icon */}
           {!isAuthenticated && (
             <a href="/login" className="sneako-cta">
