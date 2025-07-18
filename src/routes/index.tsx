@@ -5,10 +5,13 @@ import {
   Register,
   ErrorPage,
   UserProfile,
+  About,
+  Contact,
   MyOrders,
   Cart,
   ProductList,
   ProductDetail,
+  OrderDetail,
 } from "@/pages";
 import AdminDashboard from "@/pages/Admin/AdminDashboard";
 import UserManagement from "@/pages/Admin/UserManagement";
@@ -68,6 +71,22 @@ const router = createBrowserRouter([
       {
         path: "product/:id",
         element: <ProductDetail />,
+      },
+      {
+        path: "about",
+        element: <About />,
+      },
+      {
+        path: "contact",
+        element: <Contact />,
+      },
+      {
+        path: "orders/:id",
+        element: (
+          <ProtectedRoute>
+            <OrderDetail />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
