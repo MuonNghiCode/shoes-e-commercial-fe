@@ -8,6 +8,7 @@ import {
   MyOrders,
   Cart,
   ProductList,
+  ProductDetail,
 } from "@/pages";
 import AdminDashboard from "@/pages/Admin/AdminDashboard";
 import UserManagement from "@/pages/Admin/UserManagement";
@@ -63,6 +64,10 @@ const router = createBrowserRouter([
       {
         path: "product",
         element: <ProductList />,
+      },
+      {
+        path: "product/:id",
+        element: <ProductDetail />,
       },
     ],
   },

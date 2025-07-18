@@ -1,53 +1,69 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/user/sideBar";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const initialUser = {
-  fullName: "Nguyễn Văn A",
-  username: "nguyenvana",
-  email: "nguyenvana@example.com",
-  phone: "0123456789",
-  address: "123 Đường ABC, Quận 1, TP.HCM",
-  gender: "Nam",
-  dob: "1995-01-01",
-};
+import { useAuth } from "@/contexts/AuthContext";
+// Đã chuyển toàn bộ logic cập nhật vào AuthContext, không dùng trực tiếp authService
 
 const UserProfile = () => {
-  const [user, setUser] = useState(initialUser);
+  const { user, isAuthenticated, updateProfile, changePassword } = useAuth();
   const [edit, setEdit] = useState(false);
-  const [form, setForm] = useState(user);
+  const [form, setForm] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+  });
+  useEffect(() => {
+    if (user) {
+      setForm({
+        name: user.name || "",
+        email: user.email || "",
+      });
+    }
+  }, [user]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setForm({
+      ...form,
+      [name]: type === "checkbox" ? checked : value,
+    });
   };
 
   const handleEdit = () => {
     setEdit(true);
-    setForm(user);
+    setForm({
+      name: user?.name || "",
+      email: user?.email || "",
+    });
   };
 
   const handleCancel = () => {
     setEdit(false);
-    setForm(user);
+    setForm({
+      name: user?.name || "",
+      email: user?.email || "",
+    });
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setUser(form);
-    setEdit(false);
-    toast.success("Cập nhật thông tin thành công!", {
-      position: "top-right",
-      autoClose: 2000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-    });
+    try {
+      const updateData: any = { name: form.name, email: form.email };
+      await updateProfile(updateData); // Sử dụng hàm từ context
+      toast.success("Cập nhật thông tin thành công!", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      setEdit(false);
+    } catch (err) {
+      toast.error("Cập nhật thất bại!");
+    }
   };
 
   // Đổi mật khẩu
@@ -70,12 +86,17 @@ const UserProfile = () => {
       return;
     }
     setPwLoading(true);
-    setTimeout(() => {
-      setPwLoading(false);
-      setShowChangePw(false);
-      setPwForm({ old: "", new1: "", new2: "" });
-      toast.success("Đổi mật khẩu thành công!");
-    }, 1200);
+    changePassword(pwForm.old, pwForm.new1)
+      .then(() => {
+        setPwLoading(false);
+        setShowChangePw(false);
+        setPwForm({ old: "", new1: "", new2: "" });
+        toast.success("Đổi mật khẩu thành công!");
+      })
+      .catch((err: any) => {
+        setPwLoading(false);
+        toast.error(err.message || "Đổi mật khẩu thất bại!");
+      });
   };
 
   return (
@@ -115,23 +136,11 @@ const UserProfile = () => {
                 Họ và tên
               </label>
               <input
-                name="fullName"
-                value={form.fullName}
+                name="name"
+                value={form.name}
                 onChange={handleChange}
                 disabled={!edit}
                 className="border border-[#E6D4B6] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9B37C] bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
-                Tên đăng nhập
-              </label>
-              <input
-                name="username"
-                value={form.username}
-                onChange={handleChange}
-                disabled
-                className="border border-[#E6D4B6] rounded-lg px-3 py-2 bg-[#F5E6C5] text-[#2D1A10]"
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -143,59 +152,6 @@ const UserProfile = () => {
                 type="email"
                 disabled={!edit}
                 className="border border-[#E6D4B6] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9B37C] bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
-                Số điện thoại
-              </label>
-              <input
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                disabled={!edit}
-                className="border border-[#E6D4B6] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9B37C] bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
-              />
-            </div>
-            <div className="flex flex-col gap-2 md:col-span-2">
-              <label className="text-sm font-medium text-gray-700">
-                Địa chỉ
-              </label>
-              <input
-                name="address"
-                value={form.address}
-                onChange={handleChange}
-                disabled={!edit}
-                className="border border-[#E6D4B6] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9B37C] bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
-                Giới tính
-              </label>
-              <select
-                name="gender"
-                value={form.gender}
-                onChange={handleChange}
-                disabled={!edit}
-                className="border border-[#E6D4B6] rounded-lg px-3 py-2 bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
-              >
-                <option value="Nam">Nam</option>
-                <option value="Nữ">Nữ</option>
-                <option value="Khác">Khác</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
-                Ngày sinh
-              </label>
-              <input
-                name="dob"
-                value={form.dob}
-                onChange={handleChange}
-                type="date"
-                disabled={!edit}
-                className="border border-[#E6D4B6] rounded-lg px-3 py-2 bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
               />
             </div>
             {edit && (

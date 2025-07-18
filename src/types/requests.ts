@@ -1,3 +1,37 @@
+// Review requests
+export interface CreateReviewRequest {
+  productId: string;
+  accountId: string;
+  rating: number;
+  comment: string;
+}
+// Product query params
+export interface ProductQueryParams {
+  search?: string;
+  category?: string;
+  brand?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  size?: '38' | '39' | '40' | '41' | '42' | '43' | '44';
+  sortBy?: string;
+  order?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+}
+
+// Order query params
+export interface OrderQueryParams {
+  accountId?: string;
+  status?: string;
+  isPaid?: boolean;
+  isDelivered?: boolean;
+  fromDate?: string;
+  toDate?: string;
+  sortBy?: string;
+  order?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+}
 // ...existing code...
 // Auth requests
 export interface LoginRequest {
