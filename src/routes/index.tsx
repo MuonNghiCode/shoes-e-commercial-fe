@@ -5,10 +5,13 @@ import {
   Register,
   ErrorPage,
   UserProfile,
+  About,
+  Contact,
   MyOrders,
   Cart,
   ProductList,
   ProductDetail,
+  OrderDetail,
 } from "@/pages";
 import AdminDashboard from "@/pages/Admin/AdminDashboard";
 import UserManagement from "@/pages/Admin/UserManagement";
@@ -17,6 +20,7 @@ import ProtectedRoute from "@/routes/ProtectedRoute";
 import { createBrowserRouter } from "react-router-dom";
 
 import Checkout from "@/pages/Checkout";
+import PaymentDetail from "@/pages/PaymentDetail";
 
 const router = createBrowserRouter([
   {
@@ -52,6 +56,14 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: "payment_detail",
+        element: (
+          <ProtectedRoute>
+            <PaymentDetail />
+          </ProtectedRoute>
+        ),
+      },
 
       {
         path: "checkout",
@@ -68,6 +80,22 @@ const router = createBrowserRouter([
       {
         path: "product/:id",
         element: <ProductDetail />,
+      },
+      {
+        path: "about",
+        element: <About />,
+      },
+      {
+        path: "contact",
+        element: <Contact />,
+      },
+      {
+        path: "orders/:id",
+        element: (
+          <ProtectedRoute>
+            <OrderDetail />
+          </ProtectedRoute>
+        ),
       },
     ],
   },

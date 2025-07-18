@@ -27,6 +27,7 @@ export const API_ENDPOINTS = {
   ORDERS: {
     BASE: "/orders",
     BY_ID: (id: string) => `/orders/${id}`,
+    ADMIN_ALL: "/orders/admin/all",
   },
 
   // Admin endpoints
@@ -35,6 +36,7 @@ export const API_ENDPOINTS = {
     PRODUCTS: "/products",
     ALL_PRODUCTS: "/products",
     DASHBOARD_STATS: "/admin/stats",
+    ORDERS: "/orders/admin/all",
   },
 } as const;
 
