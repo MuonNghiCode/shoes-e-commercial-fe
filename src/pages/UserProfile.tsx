@@ -24,7 +24,7 @@ const UserProfile = () => {
         email: user.email || "",
         phone: user.phone || "",
         address: user.address || "",
-        gender: user.gender || "other",
+        gender: user.gender ?? "other", // Sửa lại để nhận giá trị từ BE
         dateOfBirth: user.dateOfBirth ? user.dateOfBirth.slice(0, 10) : "",
       });
     }
@@ -75,7 +75,13 @@ const UserProfile = () => {
         gender: form.gender,
         dateOfBirth: form.dateOfBirth,
       };
-      await updateProfile(updateData);
+      const updated = await updateProfile(updateData);
+      // Đảm bảo lấy đúng dữ liệu user từ BE
+      let userData = updated;
+      if (updated && typeof updated === "object") {
+        if (updated.account) userData = updated.account;
+        if (updated.data) userData = updated.data;
+      }
       toast.success("Cập nhật thông tin thành công!", {
         position: "top-right",
         autoClose: 2000,
@@ -86,6 +92,16 @@ const UserProfile = () => {
         progress: undefined,
       });
       setEdit(false);
+      setForm({
+        name: userData.name || "",
+        email: userData.email || "",
+        phone: userData.phone || "",
+        address: userData.address || "",
+        gender: userData.gender || "other",
+        dateOfBirth: userData.dateOfBirth
+          ? userData.dateOfBirth.slice(0, 10)
+          : "",
+      });
     } catch (err) {
       toast.error("Cập nhật thất bại!");
     }
@@ -219,6 +235,17 @@ const UserProfile = () => {
                 <option value="female">Nữ</option>
                 <option value="other">Khác</option>
               </select>
+              {/* Hiển thị giá trị gender hiện tại nếu không phải edit */}
+              {!edit && (
+                <div className="mt-1 text-sm text-gray-500">
+                  Hiện tại:{" "}
+                  {form.gender === "male"
+                    ? "Nam"
+                    : form.gender === "female"
+                    ? "Nữ"
+                    : "Khác"}
+                </div>
+              )}
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium text-gray-700">
