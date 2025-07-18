@@ -74,8 +74,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const register = async (data: RegisterRequest) => {
-    await authService.register(data);
-    await login({ email: data.email, password: data.password });
+    try {
+      await authService.register(data);
+      await login({ email: data.email, password: data.password });
+    } catch (err: any) {
+      throw new Error(err?.response?.data?.message || "Đăng ký thất bại");
+    }
   };
 
   const logout = () => {
