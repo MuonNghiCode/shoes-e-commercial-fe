@@ -31,7 +31,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<Account | null>(() => {
     const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
+    if (!storedUser || storedUser === "undefined") return null;
+    try {
+      return JSON.parse(storedUser);
+    } catch {
+      return null;
+    }
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -41,11 +46,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       authService
         .getProfile()
         .then((response) => {
-          {
-            // response.data.user là profile user
-            setUser({ ...response.data.user });
-          }
-          localStorage.setItem("user", JSON.stringify(response.data.user));
+          // Nếu response.data.account tồn tại thì lấy, nếu không thì lấy response.data
+          const userData =
+            response.data.account !== undefined
+              ? response.data.account
+              : response.data;
+          setUser({ ...userData });
+          localStorage.setItem("user", JSON.stringify(userData));
         })
         .catch((error) => {
           if (error?.response?.status === 401) {
@@ -53,7 +60,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             localStorage.removeItem("token");
             localStorage.removeItem("user");
           }
-          // Nếu lỗi khác thì giữ user cũ
         })
         .finally(() => setIsLoading(false));
     } else {
@@ -120,10 +126,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     data: Partial<Account> & { password?: string }
   ) => {
     const response = await authService.updateProfile(undefined, data);
-    // Sau khi cập nhật thành công, lấy lại profile mới nhất
-    const profileRes = await authService.getProfile();
-    setUser({ ...profileRes.data.user });
-    return response;
+    // Nếu response.account tồn tại thì lấy, nếu không thì lấy response trực tiếp
+    const updatedUser = response.account ? response.account : response;
+    setUser({ ...updatedUser });
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    return updatedUser;
   };
 
   // Đổi mật khẩu
