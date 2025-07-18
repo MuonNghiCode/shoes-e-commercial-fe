@@ -16,7 +16,9 @@ const Login: React.FC = () => {
 
   const form = location.state?.form?.pathname || "/";
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    if (e && typeof e.preventDefault === "function") {
+      e.preventDefault();
+    }
     try {
       const user = await login({ email, password });
       toast.success("Đăng nhập thành công!");
@@ -26,9 +28,11 @@ const Login: React.FC = () => {
         navigate(form, { replace: true });
       }
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.message || "Đăng nhập thất bại. Vui lòng thử lại."
-      );
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Đăng nhập thất bại. Vui lòng thử lại.";
+      toast.error(message);
     }
   };
 
@@ -195,6 +199,7 @@ const Login: React.FC = () => {
                 className={`peer w-full px-7 py-5 border-2 border-[color:var(--sneako-gold)]/70 rounded-2xl focus:outline-none bg-white/80 text-[color:var(--sneako-dark)] text-lg shadow-lg transition placeholder-transparent font-semibold pr-14`}
                 placeholder="Mật khẩu"
                 required
+                autoComplete="current-password"
               />
               <label
                 htmlFor="login-password"

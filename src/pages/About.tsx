@@ -2,22 +2,27 @@ import React from "react";
 
 const teamMembers = [
   {
-    name: "Nguyễn Văn A",
+    name: "Phạm Minh Quân",
     role: "Trưởng nhóm",
     avatar: "/avatar1.webp",
   },
   {
-    name: "Trần Thị B",
+    name: "Bùi Trọng Trí",
     role: "Thành viên",
     avatar: "/avatar2.webp",
   },
   {
-    name: "Lê Văn C",
+    name: "Hồ Hữu Phước",
     role: "Thành viên",
     avatar: "/avatar3.webp",
   },
   {
-    name: "Phạm Thị D",
+    name: "Trịnh Đức Anh",
+    role: "Thành viên",
+    avatar: "/avatar4.webp",
+  },
+    {
+    name: "Nguyễn Nhật Minh",
     role: "Thành viên",
     avatar: "/avatar4.webp",
   },
