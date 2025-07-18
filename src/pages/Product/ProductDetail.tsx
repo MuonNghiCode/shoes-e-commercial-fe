@@ -18,6 +18,7 @@ const ProductDetail: React.FC = () => {
   }
   const { id } = useParams<{ id: string }>();
   const [shoe, setShoe] = useState<any>(null);
+  const [activeImgIdx, setActiveImgIdx] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const { addToCart } = useCart();
 
@@ -54,7 +55,7 @@ const ProductDetail: React.FC = () => {
           {/* Ảnh sản phẩm lớn nổi bật */}
           <div className="flex-shrink-0 w-full max-w-[520px] aspect-[4/3] rounded-[2.5rem] overflow-hidden bg-[color:var(--sneako-beige,#f5f5dc)] shadow-2xl flex items-center justify-center border-4 border-[color:var(--sneako-gold,#e6c066)]/70 relative">
             <img
-              src={shoe.images[0]}
+              src={shoe.images[activeImgIdx]}
               alt={shoe.name}
               className="w-full h-full object-cover object-center select-none drop-shadow-2xl scale-105 transition-transform duration-300 hover:scale-110"
               draggable={false}
@@ -62,6 +63,26 @@ const ProductDetail: React.FC = () => {
             />
             {/* Hiệu ứng ánh sáng */}
             <div className="absolute inset-0 pointer-events-none rounded-[2.5rem] bg-gradient-to-t from-white/30 via-transparent to-white/10" />
+
+            {/* Thumbnails dưới ảnh */}
+            {Array.isArray(shoe.images) && shoe.images.length > 1 && (
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-4 flex gap-1 bg-white/80 rounded-xl px-2 py-1 shadow border border-[color:var(--sneako-gold,#e6c066)]/30 items-center">
+                {shoe.images.map((img: string, idx: number) => (
+                  <img
+                    key={idx}
+                    src={img}
+                    alt={`Ảnh ${idx + 1}`}
+                    className={`w-10 h-8 object-cover rounded-md border-2 cursor-pointer transition-all duration-200 ${
+                      activeImgIdx === idx
+                        ? "border-[color:var(--sneako-gold,#e6c066)] scale-105"
+                        : "border-transparent opacity-70 hover:opacity-100"
+                    }`}
+                    onClick={() => setActiveImgIdx(idx)}
+                    draggable={false}
+                  />
+                ))}
+              </div>
+            )}
           </div>
           {/* Thông tin sản phẩm */}
           <div className="flex-1 flex flex-col gap-5 items-start justify-center px-2 md:px-0">
@@ -137,7 +158,9 @@ const ProductDetail: React.FC = () => {
             {/* Nút bỏ vào giỏ hàng */}
             <div className="flex flex-col md:flex-row gap-4 w-full">
               <button
-                className="w-full md:w-fit flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-white text-[color:var(--sneako-gold)] font-extrabold text-lg border-2 border-[color:var(--sneako-gold)] shadow-md hover:bg-yellow-100 hover:text-[color:var(--sneako-gold)] transition-all duration-200 tracking-wide hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[color:var(--sneako-gold)] disabled:opacity-60 mb-3"
+                className={`w-full md:w-fit flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-white text-[color:var(--sneako-gold)] font-extrabold border-2 border-[color:var(--sneako-gold)] shadow-md hover:bg-yellow-100 hover:text-[color:var(--sneako-gold)] transition-all duration-200 tracking-wide hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[color:var(--sneako-gold)] disabled:opacity-60 mb-3 ${
+                  !selectedSize ? "text-base" : "text-lg"
+                }`}
                 disabled={!selectedSize}
                 onClick={() => {
                   if (selectedSize && shoe) {
@@ -171,11 +194,13 @@ const ProductDetail: React.FC = () => {
                 </svg>
                 {selectedSize
                   ? `Bỏ vào giỏ hàng (Size ${selectedSize})`
-                  : "Chọn size để thêm"}
+                  : "Chọn size"}
               </button>
               {/* Nút mua */}
               <button
-                className="w-full md:w-fit flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-[color:var(--sneako-gold)] text-[color:var(--sneako-dark)] font-extrabold text-lg border-2 border-[color:var(--sneako-gold)] shadow-md hover:bg-yellow-300 hover:text-black transition-all duration-200 tracking-wide hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[color:var(--sneako-gold)] disabled:opacity-60"
+                className={`w-full md:w-fit flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-[color:var(--sneako-gold)] text-[color:var(--sneako-dark)] font-extrabold border-2 border-[color:var(--sneako-gold)] shadow-md hover:bg-yellow-300 hover:text-black transition-all duration-200 tracking-wide hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[color:var(--sneako-gold)] disabled:opacity-60 mb-3 ${
+                  !selectedSize ? "text-base" : "text-lg"
+                }`}
                 disabled={!selectedSize}
               >
                 <svg
@@ -193,9 +218,7 @@ const ProductDetail: React.FC = () => {
                     d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m13-9l2 9m-5-9V6a2 2 0 10-4 0v3"
                   />
                 </svg>
-                {selectedSize
-                  ? `Mua ngay (Size ${selectedSize})`
-                  : "Chọn size để mua"}
+                {selectedSize ? `Mua ngay (Size ${selectedSize})` : "Chọn size"}
               </button>
             </div>
           </div>

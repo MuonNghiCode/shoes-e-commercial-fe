@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import ShoeCard from "../products/ShoeCard";
 import ShoeLineCard from "../products/ShoeLineCard";
 import Particles from "../Particles";
-import { shoeLines } from "@/mocks/shoes";
+
 import { productService } from "@/services";
 
 // Sử dụng trực tiếp shoeLines từ mock (theo category)
@@ -12,6 +12,7 @@ const ShoeListSection: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const lineScrollRef = useRef<HTMLDivElement>(null);
   const [products, setProducts] = useState<any[]>([]);
+  const [productLines, setProductLines] = useState<any[]>([]);
 
   useEffect(() => {
     productService.getAllProducts().then((data) => {
@@ -25,6 +26,22 @@ const ShoeListSection: React.FC = () => {
           : [shoe.sizes],
       }));
       setProducts(mapped);
+
+      // Group products by category for product lines
+      const lines: Record<string, any> = {};
+      mapped.forEach((shoe) => {
+        if (shoe.category) {
+          if (!lines[shoe.category]) {
+            lines[shoe.category] = {
+              category: shoe.category,
+              image: shoe.images?.[0] || "",
+              brand: shoe.brand,
+              // Có thể thêm các trường khác nếu cần
+            };
+          }
+        }
+      });
+      setProductLines(Object.values(lines));
     });
   }, []);
 
@@ -91,7 +108,7 @@ const ShoeListSection: React.FC = () => {
               className="flex gap-6 overflow-x-auto scrollbar-hide px-2 py-2 overflow-hidden"
               style={{ scrollBehavior: "smooth" }}
             >
-              {shoeLines.map((line, idx) => (
+              {productLines.map((line, idx) => (
                 <motion.div
                   key={line.category}
                   className="h-56 min-w-[14rem] max-w-[14rem] flex-shrink-0"

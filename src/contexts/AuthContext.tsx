@@ -46,12 +46,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       authService
         .getProfile()
         .then((response) => {
-          // Nếu response.data.account tồn tại thì lấy, nếu không thì lấy response.data
-          const userData =
-            response.data.account !== undefined
-              ? response.data.account
-              : response.data;
-          setUser({ ...userData });
+          // Lấy dữ liệu người dùng từ response.data
+          const userData = response.data.user;
+          setUser(userData);
           localStorage.setItem("user", JSON.stringify(userData));
         })
         .catch((error) => {
@@ -126,8 +123,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     data: Partial<Account> & { password?: string }
   ) => {
     const response = await authService.updateProfile(undefined, data);
-    // Nếu response.account tồn tại thì lấy, nếu không thì lấy response trực tiếp
-    const updatedUser = response.account ? response.account : response;
+    // Lấy dữ liệu người dùng đã cập nhật từ response.data
+    const updatedUser = response.data;
     setUser({ ...updatedUser });
     localStorage.setItem("user", JSON.stringify(updatedUser));
     return updatedUser;
