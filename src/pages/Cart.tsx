@@ -1,27 +1,18 @@
 import React, { useState } from "react";
-import { shoes } from "../mocks/shoes";
-import type { Shoe } from "../mocks/shoes";
 import { motion } from "framer-motion";
+import { useCart } from "@/contexts/CartContext";
 
-// Dummy initial cart: 1 of each shoe
-const initialCart = shoes.map((shoe) => ({ ...shoe, quantity: 1 }));
-
-type CartItem = Shoe & { quantity: number };
 
 const Cart: React.FC = () => {
-  const [cart, setCart] = useState<CartItem[]>(initialCart);
+  const { cart, removeFromCart, updateQuantity } = useCart();
   const [shipping, setShipping] = useState<string>("free");
 
-  const handleQuantityChange = (id: number, quantity: number) => {
-    setCart((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
-      )
-    );
+  const handleQuantityChange = (id: number, size: string, quantity: number) => {
+    updateQuantity(id, size, Math.max(1, quantity));
   };
 
-  const handleRemove = (id: number) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
+  const handleRemove = (id: number, size: string) => {
+    removeFromCart(id, size);
   };
 
   const subtotal = cart.reduce(
@@ -79,14 +70,14 @@ const Cart: React.FC = () => {
               </thead>
               <tbody>
                 {cart.map((item) => (
-                  <tr key={item.id} className="border-b border-[#f7f3ea]">
+                  <tr key={item.id + item.size} className="border-b border-[#f7f3ea]">
                     <td className="flex items-center gap-4 p-3">
                       <img
                         src={item.images[0]}
                         alt={item.name}
                         className="w-20 h-15 object-contain rounded-lg bg-[#faf9f6]"
                       />
-                      <span className="font-semibold">{item.name}</span>
+                      <span className="font-semibold">{item.name} <span className="ml-2 text-xs text-gray-500">(Size {item.size})</span></span>
                     </td>
                     <td className="text-center font-semibold text-[#bfa046]">
                       {item.price.toLocaleString()}đ
@@ -97,7 +88,7 @@ const Cart: React.FC = () => {
                         min={1}
                         value={item.quantity}
                         onChange={(e) =>
-                          handleQuantityChange(item.id, Number(e.target.value))
+                          handleQuantityChange(item.id, item.size, Number(e.target.value))
                         }
                         className="w-16 py-1 rounded-md  border-[#e5d7b6] text-center"
                       />
@@ -107,7 +98,7 @@ const Cart: React.FC = () => {
                     </td>
                     <td className="text-center">
                       <button
-                        onClick={() => handleRemove(item.id)}
+                        onClick={() => handleRemove(item.id, item.size)}
                         className=" text-gray-400 cursor-pointer"
                       >
                         x

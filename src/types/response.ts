@@ -2,8 +2,19 @@ import type { Product, Order, Account, Review } from "./entities";
 export interface ResponseModel<T> {
   success: boolean;
   message: string;
-  data?: T;
-  error?: string;
+  data: T;
+}
+
+export interface ErrorResponseModel {
+    success: false;
+    message: string;
+    error?: string;
+}
+
+export interface SuccessResponseModel<T> {
+    success: true;
+    message: string;
+    data: T;
 }
 
 export interface ListResponseData<T> {
@@ -19,9 +30,12 @@ export interface ListResponseData<T> {
 
 // Auth responses
 export interface LoginResponseData {
+  account: Account;
   token: string;
-  user: Pick<Account, '_id' | 'name' | 'email' | 'isAdmin'>;
+  message: string;
 }
+
+export type LoginResponse = LoginResponseData;
 
 export interface RegisterResponseData {
   newUser: Pick<Account, '_id' | 'name' | 'email' | 'isAdmin'>;
@@ -49,16 +63,17 @@ export interface OrdersResponseData {
 export interface ProfileResponseData {
   user: Pick<Account, '_id' | 'name' | 'email' | 'isAdmin'>;
 }
-
+export type ProfileResponse = ProfileResponseData;
 // Review response
 export interface ReviewResponseData {
   review: Review;
 }
 
+
 // Export type responses
-export type LoginResponse = ResponseModel<LoginResponseData>;
+// export type LoginResponse = ResponseModel<LoginResponseData>;
 export type RegisterResponse = ResponseModel<RegisterResponseData>;
-export type ProfileResponse = ResponseModel<ProfileResponseData>;
+// export type ProfileResponse = ResponseModel<ProfileResponseData>;
 export type ProductResponse = ResponseModel<ProductResponseData>;
 export type ProductsResponse = ResponseModel<ProductsResponseData>;
 export type OrderResponse = ResponseModel<OrderResponseData>;

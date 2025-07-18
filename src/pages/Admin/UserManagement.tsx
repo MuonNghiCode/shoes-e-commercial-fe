@@ -1,59 +1,255 @@
-import { useState } from "react";
-import { users as mockUsers, type User } from "@/mocks/users";
+import { useState, useEffect } from "react";
+import { adminService } from "@/services";
+import type { Account, CreateUserRequest, UpdateUserRequest } from "@/types";
+
+interface LocalUser {
+  username: string;
+  email: string;
+  password: string;
+  role: "admin" | "user";
+  phone?: string;
+  address?: string;
+  gender?: "male" | "female" | "other";
+  dateOfBirth?: string;
+  _id?: string;
+}
 
 const UserManagement = () => {
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<LocalUser[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [newUser, setNewUser] = useState<User>({
+  const [editingUser, setEditingUser] = useState<LocalUser | null>(null);
+  const [newUser, setNewUser] = useState<LocalUser>({
     username: "",
+    email: "",
     password: "",
     role: "user",
   });
+  const [loading, setLoading] = useState(true);
+
+  // Fetch users on component mount
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      console.log("Fetching users...");
+      const response = await adminService.getAllAccounts();
+      console.log("Users API response:", response);
+
+      // Check if response is successful and has data
+      if (response && response.success !== false) {
+        // Handle different response structures
+        let userData: Account[] = [];
+
+        if (Array.isArray(response)) {
+          // Direct array response
+          userData = response as Account[];
+        } else if (response.data && Array.isArray(response.data)) {
+          // Wrapped in data property
+          userData = response.data;
+        } else if (response.success && Array.isArray(response.data)) {
+          // Standard ResponseModel structure
+          userData = response.data;
+        }
+
+        if (userData.length > 0) {
+          // Convert Account type to LocalUser type for UI compatibility
+          const localUsers: LocalUser[] = userData.map((user: Account) => ({
+            username: user.name,
+            email: user.email,
+            password: "", // Don't show password
+            role: user.isAdmin ? "admin" : "user",
+            phone: user.phone,
+            address: user.address,
+            gender: user.gender,
+            dateOfBirth: user.dateOfBirth,
+            _id: user._id,
+          }));
+          console.log("Converted users:", localUsers);
+          setUsers(localUsers);
+          setLoading(false);
+          return;
+        }
+      }
+
+      console.error("Failed to fetch users - invalid response:", response);
+      // Fallback to mock data
+      setUsers([
+        {
+          username: "admin",
+          email: "admin@example.com",
+          password: "admin123",
+          role: "admin",
+        },
+        {
+          username: "user1",
+          email: "user1@example.com",
+          password: "user123",
+          role: "user",
+        },
+      ]);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      // Fallback to mock data
+      setUsers([
+        {
+          username: "admin",
+          email: "admin@example.com",
+          password: "admin123",
+          role: "admin",
+        },
+        {
+          username: "user1",
+          email: "user1@example.com",
+          password: "user123",
+          role: "user",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredUsers = users.filter((user) =>
     user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddUser = () => {
+  const handleAddUser = async () => {
     if (newUser.username && newUser.password) {
-      setUsers([...users, { ...newUser }]);
-      setNewUser({ username: "", password: "", role: "user" });
-      setShowAddModal(false);
+      try {
+        const userData: CreateUserRequest = {
+          name: newUser.username,
+          email: newUser.email,
+          password: newUser.password,
+          isAdmin: newUser.role === "admin",
+          phone: newUser.phone,
+          address: newUser.address,
+          gender: newUser.gender,
+          dateOfBirth: newUser.dateOfBirth,
+        };
+
+        const response = await adminService.createAccount(userData);
+        if (response.success) {
+          // Add to local state
+          setUsers([...users, { ...newUser, _id: response.data._id }]);
+          setNewUser({ username: "", email: "", password: "", role: "user" });
+          setShowAddModal(false);
+          alert("Tạo tài khoản thành công!");
+        } else {
+          alert("Không thể tạo tài khoản!");
+        }
+      } catch (error) {
+        console.error("Error creating user:", error);
+        // Fallback to local add for development
+        setUsers([...users, { ...newUser, _id: Date.now().toString() }]);
+        setNewUser({ username: "", email: "", password: "", role: "user" });
+        setShowAddModal(false);
+        alert("Tạo tài khoản thành công (local)!");
+      }
     }
   };
 
-  const handleEditUser = (user: User) => {
+  const handleEditUser = (user: LocalUser) => {
     setEditingUser(user);
     setNewUser({ ...user });
     setShowAddModal(true);
   };
 
-  const handleUpdateUser = () => {
-    if (editingUser && newUser.username && newUser.password) {
-      setUsers(
-        users.map((user) =>
-          user.username === editingUser.username ? { ...newUser } : user
-        )
-      );
-      setEditingUser(null);
-      setNewUser({ username: "", password: "", role: "user" });
-      setShowAddModal(false);
+  const handleUpdateUser = async () => {
+    if (editingUser && newUser.username && editingUser._id) {
+      try {
+        const userData: UpdateUserRequest = {
+          name: newUser.username,
+          email: newUser.email,
+          isAdmin: newUser.role === "admin",
+          phone: newUser.phone,
+          address: newUser.address,
+          gender: newUser.gender,
+          dateOfBirth: newUser.dateOfBirth,
+        };
+
+        const response = await adminService.updateAccount(
+          editingUser._id,
+          userData
+        );
+        if (response.success) {
+          // Update local state
+          setUsers(
+            users.map((user) =>
+              user._id === editingUser._id
+                ? { ...newUser, _id: user._id }
+                : user
+            )
+          );
+          setEditingUser(null);
+          setNewUser({ username: "", email: "", password: "", role: "user" });
+          setShowAddModal(false);
+          alert("Cập nhật tài khoản thành công!");
+        } else {
+          alert("Không thể cập nhật tài khoản!");
+        }
+      } catch (error) {
+        console.error("Error updating user:", error);
+        // Fallback to local update for mock data
+        setUsers(
+          users.map((user) =>
+            user.username === editingUser.username
+              ? { ...newUser, _id: user._id }
+              : user
+          )
+        );
+        setEditingUser(null);
+        setNewUser({ username: "", email: "", password: "", role: "user" });
+        setShowAddModal(false);
+        alert("Cập nhật tài khoản thành công!");
+      }
     }
   };
 
-  const handleDeleteUser = (username: string) => {
+  const handleDeleteUser = async (username: string) => {
     if (confirm(`Bạn có chắc chắn muốn xóa người dùng ${username}?`)) {
-      setUsers(users.filter((user) => user.username !== username));
+      const userToDelete = users.find((user) => user.username === username);
+      if (userToDelete?._id) {
+        try {
+          const response = await adminService.deleteAccount(userToDelete._id);
+          if (response.success) {
+            setUsers(users.filter((user) => user.username !== username));
+            alert("Xóa tài khoản thành công!");
+          } else {
+            alert("Không thể xóa tài khoản!");
+          }
+        } catch (error) {
+          console.error("Error deleting user:", error);
+          alert("Có lỗi xảy ra khi xóa tài khoản!");
+        }
+      } else {
+        // For users without _id (mock data), just remove from local state
+        setUsers(users.filter((user) => user.username !== username));
+      }
     }
   };
 
   const closeModal = () => {
     setShowAddModal(false);
     setEditingUser(null);
-    setNewUser({ username: "", password: "", role: "user" });
+    setNewUser({ username: "", email: "", password: "", role: "user" });
   };
+
+  if (loading) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "var(--sneako-gray)" }}
+      >
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Đang tải...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen" style={{ background: "var(--sneako-gray)" }}>
@@ -245,6 +441,28 @@ const UserManagement = () => {
                       borderColor: "var(--sneako-gold)",
                     }}
                     disabled={!!editingUser}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium mb-1"
+                    style={{ color: "var(--sneako-dark)" }}
+                  >
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={newUser.email}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, email: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    style={{
+                      borderColor: "var(--sneako-gold)",
+                    }}
                   />
                 </div>
 

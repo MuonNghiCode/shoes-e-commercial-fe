@@ -95,7 +95,7 @@ const HeroSection = () => {
             Luxury Sneaker Store
           </span>
           <motion.a
-            href="#shoes-list"
+            href="/product"
             className="mt-5 md:mt-6 inline-block bg-[color:var(--sneako-gold)] text-[color:var(--sneako-dark)] font-bold px-7 py-3 md:px-12 md:py-5 rounded-2xl shadow-xl hover:bg-yellow-400 transition text-lg md:text-2xl tracking-wide border-2 border-[color:var(--sneako-gold)]"
             whileHover={{ scale: 1.07, boxShadow: "0 8px 32px #c9b37c88" }}
             whileTap={{ scale: 0.97 }}
