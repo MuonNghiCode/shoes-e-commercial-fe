@@ -1,4 +1,4 @@
-import type { Product, Order, Account, Review } from "./entities";
+import type { Product, Order, Account, Review, OrderItem } from "./entities";
 export interface ResponseModel<T> {
   success: boolean;
   message: string;
@@ -27,6 +27,9 @@ export interface ListResponseData<T> {
   };
   stats?: any;
 }
+
+// Cart responses
+export type CartResponse = OrderItem[];
 
 // Auth responses
 export interface LoginResponseData {

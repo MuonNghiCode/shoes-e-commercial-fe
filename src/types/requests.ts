@@ -78,9 +78,11 @@ export interface CreateReviewRequest {
 
 // Order requests
 export interface CreateOrderItemRequest {
+  account: string; // Account ID - required by backend
   product: string; // Product ID
   price: number;
   qty: number;
+  size: string; // Size field for shoes
 }
 
 export interface CreateOrderRequest {
