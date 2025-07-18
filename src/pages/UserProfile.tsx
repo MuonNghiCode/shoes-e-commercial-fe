@@ -12,17 +12,27 @@ const UserProfile = () => {
   const [form, setForm] = useState({
     name: user?.name || "",
     email: user?.email || "",
+    phone: user?.phone || "",
+    address: user?.address || "",
+    gender: user?.gender || "other",
+    dateOfBirth: user?.dateOfBirth ? user.dateOfBirth.slice(0, 10) : "",
   });
   useEffect(() => {
     if (user) {
       setForm({
         name: user.name || "",
         email: user.email || "",
+        phone: user.phone || "",
+        address: user.address || "",
+        gender: user.gender || "other",
+        dateOfBirth: user.dateOfBirth ? user.dateOfBirth.slice(0, 10) : "",
       });
     }
   }, [user]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value, type, checked } = e.target;
     setForm({
       ...form,
@@ -35,6 +45,10 @@ const UserProfile = () => {
     setForm({
       name: user?.name || "",
       email: user?.email || "",
+      phone: user?.phone || "",
+      address: user?.address || "",
+      gender: user?.gender || "other",
+      dateOfBirth: user?.dateOfBirth ? user.dateOfBirth.slice(0, 10) : "",
     });
   };
 
@@ -43,14 +57,25 @@ const UserProfile = () => {
     setForm({
       name: user?.name || "",
       email: user?.email || "",
+      phone: user?.phone || "",
+      address: user?.address || "",
+      gender: user?.gender || "other",
+      dateOfBirth: user?.dateOfBirth ? user.dateOfBirth.slice(0, 10) : "",
     });
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const updateData: any = { name: form.name, email: form.email };
-      await updateProfile(updateData); // Sử dụng hàm từ context
+      const updateData: any = {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        address: form.address,
+        gender: form.gender,
+        dateOfBirth: form.dateOfBirth,
+      };
+      await updateProfile(updateData);
       toast.success("Cập nhật thông tin thành công!", {
         position: "top-right",
         autoClose: 2000,
@@ -152,6 +177,62 @@ const UserProfile = () => {
                 type="email"
                 disabled={!edit}
                 className="border border-[#E6D4B6] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9B37C] bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-gray-700">
+                Số điện thoại
+              </label>
+              <input
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                type="tel"
+                disabled={!edit}
+                className="border border-[#E6D4B6] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9B37C] bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-gray-700">
+                Địa chỉ
+              </label>
+              <input
+                name="address"
+                value={form.address}
+                onChange={handleChange}
+                disabled={!edit}
+                className="border border-[#E6D4B6] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C9B37C] bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-gray-700">
+                Giới tính
+              </label>
+              <select
+                name="gender"
+                value={form.gender}
+                onChange={handleChange}
+                disabled={!edit}
+                className="border border-[#E6D4B6] rounded-lg px-3 py-2 bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
+              >
+                <option value="male">Nam</option>
+                <option value="female">Nữ</option>
+                <option value="other">Khác</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-gray-700">
+                Ngày sinh
+              </label>
+              <input
+                name="dateOfBirth"
+                value={form.dateOfBirth}
+                onChange={handleChange}
+                type="date"
+                disabled={!edit}
+                min="1940-01-01"
+                max={new Date().toISOString().slice(0, 10)}
+                className="border border-[#E6D4B6] rounded-lg px-3 py-2 bg-[#FFF8ED] disabled:bg-[#F5E6C5] text-[#2D1A10]"
               />
             </div>
             {edit && (
