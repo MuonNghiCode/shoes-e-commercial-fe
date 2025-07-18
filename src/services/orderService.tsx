@@ -13,6 +13,13 @@ class OrderService extends BaseApiService {
   async getById(id: string): Promise<any> {
     return await this.get(API_ENDPOINTS.ORDERS.BY_ID(id));
   }
+
+  // Admin cập nhật trạng thái đơn hàng
+  async updateOrderStatus(id: string, status: string): Promise<any> {
+    return await this.put(API_ENDPOINTS.ORDERS.BASE + `/admin/${id}/status`, {
+      status,
+    });
+  }
 }
 
 export const orderService = new OrderService();
