@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext";
 import React, { useEffect, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { motion } from "framer-motion";
@@ -5,13 +6,16 @@ import { useNavigate } from "react-router-dom";
 import { Particles } from "@/components";
 
 const Register: React.FC = () => {
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -22,14 +26,24 @@ const Register: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!name || !email || !password || !confirmPassword) {
+      setError("Vui lòng nhập đầy đủ thông tin.");
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Mật khẩu không khớp");
       return;
     }
-    // TODO: Add registration logic here
     setError("");
-    // navigate or further actions
-    navigate("/login");
+    setLoading(true);
+    register({ name, email, password })
+      .then(() => {
+        navigate("/");
+      })
+      .catch((err: any) => {
+        setError(err.message || "Đăng ký thất bại");
+      })
+      .finally(() => setLoading(false));
   };
 
   return (
@@ -126,25 +140,49 @@ const Register: React.FC = () => {
             <div className="relative">
               <input
                 type="text"
-                id="register-username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="register-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className={`peer w-full px-7 py-5 border-2 border-[color:var(--sneako-gold)]/70 rounded-2xl focus:outline-none bg-white/80 text-[color:var(--sneako-dark)] text-lg shadow-lg transition placeholder-transparent font-semibold`}
-                placeholder="Tên đăng nhập"
+                placeholder="Tên"
                 required
                 autoFocus
               />
               <label
-                htmlFor="register-username"
+                htmlFor="register-name"
                 className={`absolute left-7 text-lg font-light text-[color:var(--sneako-beige)] pointer-events-none transition-all duration-200
                   ${
-                    username
+                    name
                       ? "-top-4 text-sm text-[color:var(--sneako-gold)]"
                       : "top-1/2 -translate-y-1/2"
                   }
                   peer-focus:-top-4 peer-focus:text-sm peer-focus:text-[color:var(--sneako-gold)]`}
               >
-                Tên đăng nhập
+                Tên
+              </label>
+            </div>
+            {/* Floating label for email */}
+            <div className="relative">
+              <input
+                type="email"
+                id="register-email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={`peer w-full px-7 py-5 border-2 border-[color:var(--sneako-gold)]/70 rounded-2xl focus:outline-none bg-white/80 text-[color:var(--sneako-dark)] text-lg shadow-lg transition placeholder-transparent font-semibold`}
+                placeholder="Email"
+                required
+              />
+              <label
+                htmlFor="register-email"
+                className={`absolute left-7 text-lg font-light text-[color:var(--sneako-beige)] pointer-events-none transition-all duration-200
+                  ${
+                    email
+                      ? "-top-4 text-sm text-[color:var(--sneako-gold)]"
+                      : "top-1/2 -translate-y-1/2"
+                  }
+                  peer-focus:-top-4 peer-focus:text-sm peer-focus:text-[color:var(--sneako-gold)]`}
+              >
+                Email
               </label>
             </div>
             {/* Floating label for password */}
