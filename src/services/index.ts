@@ -1,7 +1,8 @@
-export { authService } from './authService';
-export { productService } from './productService';
+export { authService } from "./authService";
+export { productService } from "./productService";
+export { adminService } from "./adminService";
 
-export { default as BaseApiService } from './base';
+export { default as BaseApiService } from "./base";
 
-export * from '@/types';
-export * from '@/constants'
+export * from "@/types";
+export * from "@/constants";
